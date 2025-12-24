@@ -1,6 +1,15 @@
+import logging
 import streamlit as st
 from typing import List
 import db
+
+# simple UI logger
+logging.basicConfig(
+    filename="ui.log",
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(message)s",
+)
+logger = logging.getLogger("local-kanban")
 
 
 DB_PATH = "kanban_board.db"
@@ -142,7 +151,9 @@ def main():
 
 # ---- Handlers used by UI (and tests) ----
 def add_task_handler(title: str, description: str, column: str = "Backlog", priority: str = "Medium", db_path: str = DB_PATH) -> int:
-    return db.add_task(title, description, column=column, priority=priority, db_path=db_path)
+    tid = db.add_task(title, description, column=column, priority=priority, db_path=db_path)
+    logger.info("add_task: id=%s title=%s column=%s priority=%s", tid, title, column, priority)
+    return tid
 
 
 def move_task_handler(task_id: int, direction: str, db_path: str = DB_PATH) -> bool:
@@ -157,19 +168,23 @@ def move_task_handler(task_id: int, direction: str, db_path: str = DB_PATH) -> b
         return False
     if direction == "left" and idx > 0:
         db.move_task(task_id, STATUSES[idx - 1], db_path=db_path)
+        logger.info("move_task: id=%s from=%s to=%s", task_id, STATUSES[idx], STATUSES[idx - 1])
         return True
     if direction == "right" and idx < len(STATUSES) - 1:
         db.move_task(task_id, STATUSES[idx + 1], db_path=db_path)
+        logger.info("move_task: id=%s from=%s to=%s", task_id, STATUSES[idx], STATUSES[idx + 1])
         return True
     return False
 
 
 def archive_task_handler(task_id: int, db_path: str = DB_PATH) -> None:
     db.archive_task(task_id, db_path=db_path)
+    logger.info("archive_task: id=%s", task_id)
 
 
 def delete_task_handler(task_id: int, db_path: str = DB_PATH) -> None:
     db.delete_task(task_id, db_path=db_path)
+    logger.info("delete_task: id=%s", task_id)
     
 
 
