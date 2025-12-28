@@ -17,7 +17,9 @@ def init_db(db_path: str = "kanban_board.db") -> None:
             description TEXT,
             column TEXT NOT NULL,
             priority TEXT,
-            date_added DATETIME DEFAULT CURRENT_TIMESTAMP
+            project TEXT DEFAULT 'Default',
+            date_added DATETIME DEFAULT CURRENT_TIMESTAMP,
+            deadline DATETIME DEFAULT (DATETIME('now', '+1 day'))
         )
         """
     )
@@ -31,13 +33,26 @@ def _connect(db_path: str = "kanban_board.db"):
     return conn
 
 
-def get_tasks(db_path: str = "kanban_board.db", include_archived: bool = False) -> List[Dict]:
+def get_tasks(
+    db_path: str = "kanban_board.db",
+    include_archived: bool = False,
+    project: str | None = None,
+) -> List[Dict]:
     conn = _connect(db_path)
     cur = conn.cursor()
-    if include_archived:
-        cur.execute("SELECT * FROM tasks ORDER BY date_added DESC")
-    else:
-        cur.execute("SELECT * FROM tasks WHERE column != 'Archived' ORDER BY date_added DESC")
+    params = []
+    where = []
+    if not include_archived:
+        where.append("column != 'Archived'")
+    if project:
+        where.append("project = ?")
+        params.append(project)
+
+    q = "SELECT * FROM tasks"
+    if where:
+        q += " WHERE " + " AND ".join(where)
+    q += " ORDER BY date_added DESC"
+    cur.execute(q, params)
     rows = cur.fetchall()
     conn.close()
     return rows
@@ -52,12 +67,19 @@ def get_task(task_id: int, db_path: str = "kanban_board.db") -> Optional[Dict]:
     return row
 
 
-def add_task(title: str, description: str, column: str = "Backlog", priority: str = "Medium", db_path: str = "kanban_board.db") -> int:
+def add_task(
+    title: str,
+    description: str,
+    column: str = "Backlog",
+    priority: str = "Medium",
+    project: str = "Default",
+    db_path: str = "kanban_board.db",
+) -> int:
     conn = _connect(db_path)
     cur = conn.cursor()
     cur.execute(
-        "INSERT INTO tasks (title, description, column, priority) VALUES (?, ?, ?, ?)",
-        (title, description, column, priority),
+        "INSERT INTO tasks (title, description, column, priority, project) VALUES (?, ?, ?, ?, ?)",
+        (title, description, column, priority, project),
     )
     conn.commit()
     task_id = cur.lastrowid
@@ -73,7 +95,17 @@ def move_task(task_id: int, new_column: str, db_path: str = "kanban_board.db") -
     conn.close()
 
 
-def update_task(task_id: int, title: Optional[str] = None, description: Optional[str] = None, priority: Optional[str] = None, db_path: str = "kanban_board.db") -> None:
+def update_task(
+    task_id: int,
+    title: Optional[str] = None,
+    description: Optional[str] = None,
+    priority: Optional[str] = None,
+    column: Optional[str] = None,
+    project: Optional[str] = None,
+    date_added: Optional[str] = None,
+    deadline: Optional[str] = None,
+    db_path: str = "kanban_board.db",
+) -> None:
     conn = _connect(db_path)
     cur = conn.cursor()
     fields = []
@@ -87,6 +119,18 @@ def update_task(task_id: int, title: Optional[str] = None, description: Optional
     if priority is not None:
         fields.append("priority = ?")
         params.append(priority)
+    if column is not None:
+        fields.append("column = ?")
+        params.append(column)
+    if project is not None:
+        fields.append("project = ?")
+        params.append(project)
+    if date_added is not None:
+        fields.append("date_added = ?")
+        params.append(date_added)
+    if deadline is not None:
+        fields.append("deadline = ?")
+        params.append(deadline)
     params.append(task_id)
     if fields:
         cur.execute(f"UPDATE tasks SET {', '.join(fields)} WHERE id = ?", params)
@@ -104,3 +148,17 @@ def delete_task(task_id: int, db_path: str = "kanban_board.db") -> None:
 
 def archive_task(task_id: int, db_path: str = "kanban_board.db") -> None:
     move_task(task_id, "Archived", db_path=db_path)
+
+
+def unarchive_task(task_id: int, db_path: str = "kanban_board.db") -> None:
+    """Move a task out of Archived back to Backlog."""
+    move_task(task_id, "Backlog", db_path=db_path)
+
+
+def get_projects(db_path: str = "kanban_board.db") -> List[str]:
+    conn = _connect(db_path)
+    cur = conn.cursor()
+    cur.execute("SELECT DISTINCT project FROM tasks ORDER BY project COLLATE NOCASE")
+    rows = cur.fetchall()
+    conn.close()
+    return [r["project"] for r in rows if r.get("project")]

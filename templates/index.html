@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TaskFlow Pro - Kanban</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --glass-bg: rgba(255, 255, 255, 0.95);
+        --panel-bg: #cfe2f3;
+        --accent: #2563eb;
+        --body-gradient: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #60a5fa 100%);
+        --text-color: #0f172a;
+        --text-muted: #64748b;
+        --card-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      }
+
+      /* High-Contrast Dark Mode */
+      [data-theme="dark"] {
+        --glass-bg: #1e293b;
+        --panel-bg: #0f172a;
+        --accent: #38bdf8;
+        --body-gradient: linear-gradient(135deg, #020617 0%, #0f172a 100%);
+        --text-color: #f8fafc;
+        --text-muted: #94a3b8;
+        --card-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      }
+
+      body {
+        background: var(--body-gradient);
+        background-attachment: fixed;
+        min-height: 100vh;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        color: var(--text-color);
+        transition: background 0.4s ease;
+      }
+
+      .navbar-custom {
+        background: var(--glass-bg);
+        border-radius: 50px;
+        margin: 20px auto;
+        padding: 10px 30px;
+        width: 95%;
+        display: flex;
+        align-items: center;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+      }
+
+      .theme-switch {
+        width: 50px; height: 26px;
+        background: #cbd5e1; border-radius: 20px;
+        position: relative; cursor: pointer;
+      }
+      .theme-switch::after {
+        content: ''; position: absolute;
+        width: 20px; height: 20px;
+        background: white; border-radius: 50%;
+        top: 3px; left: 3px; transition: 0.3s;
+      }
+      [data-theme="dark"] .theme-switch { background: var(--accent); }
+      [data-theme="dark"] .theme-switch::after { left: 27px; }
+
+      .creator-panel {
+        background: var(--glass-bg);
+        border-radius: 24px;
+        padding: 24px;
+        box-shadow: var(--card-shadow);
+      }
+
+      .form-control-custom {
+        background: rgba(0,0,0,0.03);
+        border: 1px solid rgba(0,0,0,0.1);
+        color: var(--text-color) !important;
+        border-radius: 12px; padding: 10px; margin-bottom: 12px;
+      }
+      [data-theme="dark"] .form-control-custom {
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+      }
+
+      .lane-container {
+        background: var(--panel-bg);
+        border-radius: 30px; padding: 20px; min-height: 70vh;
+      }
+
+      .card-item {
+        background: var(--glass-bg);
+        border-radius: 20px; padding: 18px; margin-bottom: 15px;
+        box-shadow: var(--card-shadow);
+        border: 1px solid rgba(255,255,255,0.05);
+        cursor: grab;
+      }
+
+      .project-pill {
+        font-size: 0.65rem; background: var(--accent);
+        color: white; padding: 2px 8px; border-radius: 6px;
+        font-weight: 700; text-transform: uppercase;
+      }
+
+      .tag {
+        font-size: 0.7rem; font-weight: 600;
+        padding: 4px 10px; border-radius: 20px; color: white;
+      }
+      .tag-low { background: #10b981; }
+      .tag-medium { background: #f59e0b; }
+      .tag-high { background: #ef4444; }
+
+      .edit-form {
+        background: rgba(128, 128, 128, 0.05);
+        padding: 10px; border-radius: 12px; border: 1px dashed var(--accent);
+      }
+
+      /* Cool action buttons */
+      .btn-cool{ display:inline-flex; align-items:center; gap:.45rem; border-radius:999px; padding:.35rem .6rem; font-weight:700; transition:transform .12s ease, box-shadow .12s ease }
+      .btn-edit{ background: linear-gradient(180deg, rgba(99,102,241,0.12), rgba(99,102,241,0.06)); color:var(--accent); border: none }
+      .btn-edit:hover{ transform: translateY(-3px); box-shadow: 0 10px 30px rgba(59,130,246,0.12) }
+      .btn-archive{ background: linear-gradient(180deg, rgba(245,158,11,0.08), rgba(245,158,11,0.02)); color:#92400e; border:none }
+      .btn-archive:hover{ transform: translateY(-3px); box-shadow: 0 10px 30px rgba(245,158,11,0.10) }
+      .btn-delete{ background: linear-gradient(180deg, rgba(239,68,68,0.08), rgba(239,68,68,0.02)); color:#7f1d1d; border:none }
+      .btn-delete:hover{ transform: translateY(-3px); box-shadow: 0 10px 30px rgba(239,68,68,0.10) }
+      .controls .btn{ padding:.35rem .6rem }
+    </style>
+  </head>
+  <body data-theme="light">
+
+    <div class="navbar-custom">
+      <div class="fw-bold me-auto d-flex align-items-center">
+        <span style="background:var(--accent); color:white; padding:5px 12px; border-radius:12px; margin-right:10px;">TF</span>
+        <h4 class="mb-0">TaskFlow</h4>
+      </div>
+      <div class="d-flex align-items-center gap-4">
+        <select id="project-filter" class="form-select form-select-sm border-0 bg-transparent fw-bold" style="width:140px; color:var(--text-color);">
+            <option value="">All Projects</option>
+        </select>
+        <div class="form-check form-switch mb-0">
+          <input class="form-check-input" type="checkbox" id="show-archived">
+          <label class="form-check-label small fw-bold" for="show-archived">Archived</label>
+        </div>
+        <div class="theme-switch" id="theme-toggle"></div>
+      </div>
+    </div>
+
+    <div class="container-fluid px-4">
+      <div class="row g-4">
+        <div class="col-lg-3">
+          <div class="creator-panel">
+            <h6 class="fw-bold mb-3">Create New Task</h6>
+            <input id="new-title" class="form-control form-control-custom" placeholder="Task Name" />
+            <input id="new-project" class="form-control form-control-custom" placeholder="Project Tag (e.g. Design)" />
+            <textarea id="new-desc" class="form-control form-control-custom" placeholder="Details..." rows="2"></textarea>
+            <div class="row g-2 mb-3">
+              <div class="col-6"><select id="new-column" class="form-select form-select-sm"><option>Backlog</option><option>In Progress</option><option>Done</option></select></div>
+              <div class="col-6"><select id="new-priority" class="form-select form-select-sm"><option>Low</option><option selected>Medium</option><option>High</option></select></div>
+            </div>
+            <button id="add-task" class="btn btn-primary w-100 fw-bold py-2 rounded-3" style="background:var(--accent); border:none;">Create Task</button>
+          </div>
+        </div>
+        <div class="col-lg-9">
+          <div class="row g-4" id="board"></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const STATUSES = ["Backlog", "In Progress", "Done"];
+
+      // Theme Toggle
+      document.getElementById('theme-toggle').addEventListener('click', () => {
+        const body = document.body;
+        body.setAttribute('data-theme', body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+      });
+
+      async function fetchTasks(showArchived=false, project=null){
+        let url = `/api/tasks?archived=${showArchived ? 1 : 0}`;
+        if(project) url += '&project=' + encodeURIComponent(project);
+        const res = await fetch(url);
+        return await res.json();
+      }
+
+      async function render(){
+        const showArchived = document.getElementById('show-archived').checked;
+        const projectFilter = document.getElementById('project-filter').value;
+        const tasks = await fetchTasks(showArchived, projectFilter);
+        const board = document.getElementById('board');
+        board.innerHTML = '';
+
+        const cols = showArchived ? ["Archived"] : STATUSES;
+
+        cols.forEach(s => {
+          const col = document.createElement('div');
+          col.className = showArchived ? 'col-12' : 'col-md-4';
+          col.innerHTML = `<div class="lane-container"><div class="fw-bold mb-3 opacity-75">${s}</div><div class="lane" id="lane-${s}"></div></div>`;
+          board.appendChild(col);
+        });
+
+        tasks.forEach(t => {
+          const laneId = showArchived ? 'lane-Archived' : 'lane-' + t.column;
+          const lane = document.getElementById(laneId);
+          if(!lane) return;
+
+          const card = document.createElement('div');
+          card.className = 'card-item';
+          card.draggable = !showArchived;
+          card.dataset.id = t.id;
+          card.innerHTML = `
+            <div class="d-flex justify-content-between mb-2">
+              <span class="project-pill">${t.project || 'General'}</span>
+              <span class="tag tag-${t.priority.toLowerCase()}">${t.priority}</span>
+            </div>
+            <div class="card-title">${t.title}</div>
+            <p class="small text-muted mb-3" style="font-size:0.8rem">${t.description || ''}</p>
+            <div class="d-flex justify-content-end gap-2 controls">
+              ${!showArchived ? `<button onclick="openEdit(${t.id})" class="btn-cool btn-edit btn-sm"><i class=\"bi bi-pencil-fill\"></i><span class=\"d-none d-md-inline ms-1\">Edit</span></button>` : ''}
+              <button onclick="archiveTask(${t.id}, ${showArchived})" class="btn-cool btn-archive btn-sm"><i class=\"bi bi-archive-fill\"></i><span class=\"d-none d-md-inline ms-1\">${showArchived ? 'Restore' : 'Archive'}</span></button>
+              <button onclick="deleteTask(${t.id})" class="btn-cool btn-delete btn-sm"><i class=\"bi bi-trash-fill\"></i><span class=\"d-none d-md-inline ms-1\">Delete</span></button>
+            </div>`;
+          lane.appendChild(card);
+
+          if(!showArchived){
+            // make card provide drag data and simple drag styling
+            card.addEventListener('dragstart', e => {
+              try{ e.dataTransfer.setData('text/plain', card.dataset.id); }catch(_){ }
+              e.dataTransfer.effectAllowed = 'move';
+              card.classList.add('dragging');
+            });
+            card.addEventListener('dragend', () => { card.classList.remove('dragging'); });
+          }
+        });
+
+        if(!showArchived) setupDragAndDrop();
+      }
+
+      function setupDragAndDrop() {
+        document.querySelectorAll('.lane').forEach(lane => {
+          lane.addEventListener('dragover', e => { e.preventDefault(); lane.classList.add('drag-over'); e.dataTransfer.dropEffect = 'move'; });
+          lane.addEventListener('dragleave', e => { lane.classList.remove('drag-over'); });
+          lane.addEventListener('drop', async e => {
+            e.preventDefault(); lane.classList.remove('drag-over');
+            const id = e.dataTransfer.getData('text/plain');
+            if(!id) return;
+            const to = lane.id.replace('lane-', '');
+            await fetch(`/api/task/${id}/move`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({to})});
+            render();
+          });
+        });
+        document.querySelectorAll('.card-item').forEach(c => {
+          // ensure fallback listener exists in case cards were created without direct listeners
+          if(!c.draggable) return;
+          c.addEventListener('dragstart', e => {
+            try{ e.dataTransfer.setData('text/plain', c.dataset.id); }catch(_){ }
+            e.dataTransfer.effectAllowed = 'move';
+            c.classList.add('dragging');
+          });
+          c.addEventListener('dragend', () => c.classList.remove('dragging'));
+        });
+      }
+
+      window.archiveTask = async (id, isArchived) => {
+        const endpoint = isArchived ? `/api/task/${id}/unarchive` : `/api/task/${id}/archive`;
+        await fetch(endpoint, {method:'POST'});
+        render();
+      };
+
+      window.deleteTask = async (id) => { if(confirm('Delete permanently?')) { await fetch(`/api/task/${id}`, {method:'DELETE'}); render(); }};
+
+      window.openEdit = async (id) => {
+        const card = document.querySelector(`.card-item[data-id="${id}"]`);
+        // Basic prompt-based edit for simplicity in template, or replace with inline form
+        const newTitle = prompt("New Title:");
+        if(newTitle) {
+            await fetch(`/api/task/${id}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({title: newTitle})
+            });
+            render();
+        }
+      };
+
+      document.getElementById('add-task').addEventListener('click', async () => {
+        const payload = {
+          title: document.getElementById('new-title').value,
+          description: document.getElementById('new-desc').value,
+          column: document.getElementById('new-column').value,
+          priority: document.getElementById('new-priority').value,
+          project: document.getElementById('new-project').value || 'General'
+        };
+        await fetch('/api/task', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+        render();
+      });
+
+      document.getElementById('show-archived').addEventListener('change', render);
+      document.getElementById('project-filter').addEventListener('change', render);
+
+      render();
+    </script>
+  </body>
+</html>
