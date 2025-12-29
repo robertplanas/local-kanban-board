@@ -80,7 +80,7 @@ def add_task(
     conn = _connect(db_path)
     cur = conn.cursor()
     cur.execute(
-        "INSERT INTO tasks (title, description, column, priority, project, date_added, deadline) VALUES (?, ?, ?, ?, ?)",
+        "INSERT INTO tasks (title, description, column, priority, project, date_added, deadline) VALUES (?, ?, ?, ?, ?,?,?)",
         (title, description, column, priority, project, date_added, deadline),
     )
     conn.commit()

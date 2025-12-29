@@ -27,6 +27,8 @@ def api_add_task():
     column = data.get("column", "Backlog")
     priority = data.get("priority", "Medium")
     project = data.get("project", "Default")
+    date_added = data.get("date_added", None)
+    deadline = data.get("deadline", None)
     if not title:
         return jsonify({"error": "title required"}), 400
     tid = db.add_task(
@@ -35,6 +37,8 @@ def api_add_task():
         column=column,
         priority=priority,
         project=project,
+        date_added=date_added,
+        deadline=deadline,
         db_path=DB_PATH,
     )
     return jsonify({"id": tid})
@@ -93,6 +97,7 @@ def api_update_task(task_id):
     priority = data.get("priority")
     column = data.get("column")
     project = data.get("project")
+    deadline = data.get("deadline", None)
 
     try:
         db.update_task(
@@ -102,6 +107,7 @@ def api_update_task(task_id):
             priority=priority,
             column=column,
             project=project,
+            deadline=deadline,
             db_path=DB_PATH,
         )
         return jsonify({"updated": True})

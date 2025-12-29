@@ -395,7 +395,7 @@ document.getElementById('add-task').addEventListener('click', async () => {
     column: document.getElementById('new-column').value,
     priority: document.getElementById('new-priority').value,
     project: document.getElementById('new-project').value || 'General',
-    deadline: document.getElementById('new-deadline').value
+    deadline: document.getElementById('new-deadline').value === "" ? null : document.getElementById('new-deadline').value
   };
   await fetch('/api/task', { 
     method: 'POST', 
