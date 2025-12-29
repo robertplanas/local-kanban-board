@@ -28,14 +28,96 @@
       }
 
       .navbar-custom {
-        background: var(--glass-bg);
-        border-radius: 10px;
-        margin: 20px auto;
-        padding: 10px 30px;
-        width: 97%;
-        display: flex;
-        align-items: center;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+          background: rgba(255, 255, 255, 0.8);
+          backdrop-filter: blur(15px);
+          -webkit-backdrop-filter: blur(15px);
+          border: 1px solid rgba(255, 255, 255, 0.4);
+          border-radius: 20px;
+          margin: 20px auto;
+          padding: 12px 24px;
+          width: 97%;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+          position: sticky;
+          top: 20px;
+          z-index: 1000;
+      }
+
+      /* Logo Styling */
+      .nav-brand {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          font-weight: 800;
+          font-size: 1.25rem;
+          letter-spacing: -0.02em;
+          color: #1e293b;
+      }
+
+      .nav-logo-icon {
+          background: linear-gradient(135deg, var(--accent) 0%, #1d4ed8 100%);
+          color: white;
+          width: 40px;
+          height: 40px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 12px;
+          box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+      }
+
+      /* Filter & Action Controls */
+      .nav-controls {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          background: rgba(0, 0, 0, 0.03);
+          padding: 6px;
+          border-radius: 16px;
+          border: 1px solid rgba(0, 0, 0, 0.05);
+      }
+
+      .nav-select-custom {
+          background: transparent !important;
+          border: none !important;
+          font-size: 0.85rem;
+          font-weight: 700;
+          color: #475569 !important;
+          padding: 6px 12px !important;
+          cursor: pointer;
+          min-width: 140px;
+      }
+
+      .nav-select-custom:focus {
+          box-shadow: none !important;
+      }
+
+      /* Professional Toggle Button for Archive */
+      #show-archived-btn {
+          border: none;
+          background: transparent;
+          padding: 8px 16px;
+          border-radius: 12px;
+          font-size: 0.85rem;
+          font-weight: 700;
+          color: #64748b;
+          transition: all 0.2s;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+      }
+
+      #show-archived-btn.active {
+          background: white;
+          color: var(--accent);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      }
+
+      #show-archived-btn:hover:not(.active) {
+          background: rgba(255, 255, 255, 0.5);
+          color: #1e293b;
       }
 
       .creator-panel {
@@ -272,17 +354,29 @@
   <body data-theme="light">
 
     <div class="navbar-custom">
-      <div class="fw-bold me-auto d-flex align-items-center">
-        <span style="background:var(--accent); color:white; padding:10px 15px; border-radius:10px; margin-right:20px;">Personal Kanban</span>
+      <div class="nav-brand">
+        <div class="nav-logo-icon">
+          <i class="bi bi-kanban-fill"></i>
+        </div>
+        <span>Personal Kanban</span>
       </div>
-      <div class="d-flex align-items-center gap-4">
-        <select id="project-filter" class="form-select form-select-sm border-0 bg-transparent fw-bold" style="width:140px; color:var(--text-color);">
-            <option value="">All Projects</option>
-        </select>
-        <button id="show-archived-btn" class="btn btn-outline-primary btn-sm fw-bold">
-          Archived
-        </button>
-        <div class="theme-switch" id="theme-toggle"></div>
+
+      <div class="d-flex align-items-center gap-3">
+        <div class="nav-controls">
+          <div class="d-flex align-items-center ps-2">
+            <i class="bi bi-filter-left text-muted"></i>
+            <select id="project-filter" class="form-select nav-select-custom">
+                <option value="">All Projects</option>
+            </select>
+          </div>
+          
+          <div style="width: 1px; height: 20px; background: rgba(0,0,0,0.1); margin: 0 4px;"></div>
+
+          <button id="show-archived-btn">
+            <i class="bi bi-archive"></i>
+            <span>Archived</span>
+          </button>
+        </div>
       </div>
     </div>
 
