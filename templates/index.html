@@ -103,6 +103,39 @@
           margin-bottom: 8px;
       }
 
+      /* Expansion Logic */
+    .card-body-extra {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-out, opacity 0.2s ease;
+        opacity: 0;
+    }
+
+    .card-item.expanded .card-body-extra {
+        max-height: 500px; /* Large enough to fit content */
+        opacity: 1;
+        margin-top: 10px;
+    }
+
+    .expand-icon {
+        transition: transform 0.3s ease;
+        cursor: pointer;
+        color: var(--text-muted);
+    }
+
+    .card-item.expanded .expand-icon {
+        transform: rotate(180deg);
+    }
+
+    /* Ensure title and icon are on the same line */
+    .card-header-flex {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+
       /* Modern Badges */
       .project-pill {
           font-size: 0.7rem;
@@ -290,7 +323,6 @@ async function render() {
   const board = document.getElementById('board');
   board.innerHTML = '';
 
-  // Determine which lanes to draw
   const cols = showArchived ? ["Archived"] : STATUSES;
   
   cols.forEach(s => {
@@ -298,9 +330,7 @@ async function render() {
     col.className = showArchived ? 'col-12' : 'col-md-4';
     col.innerHTML = `
       <div class="lane-container">
-        <div class="fw-bold mb-3 opacity-75 d-flex align-items-center">
-          <span class="dot me-2"></span> ${s}
-        </div>
+        <div class="fw-bold mb-3 opacity-75">${s}</div>
         <div class="lane" id="lane-${s}" style="min-height: 200px;"></div>
       </div>`;
     board.appendChild(col);
@@ -314,59 +344,53 @@ async function render() {
     const lane = document.getElementById(laneId);
     if (!lane) return;
 
-    // Create Card Element
     const card = document.createElement('div');
-    
-    // Applying the New Professional Classes
     const priorityKey = t.priority ? t.priority.toLowerCase() : 'medium';
     card.className = `card-item card-priority-${priorityKey}`;
     card.draggable = !showArchived;
     card.dataset.id = t.id;
 
-    // Professional Action Buttons
-    const controlsHtml = `
-      <div class="d-flex justify-content-end gap-2 mt-3 pt-3 border-top" style="border-color: rgba(0,0,0,0.05) !important;">
-        ${!showArchived ? `
-          <button onclick="openEdit(${t.id})" class="btn-cool btn-edit" title="Edit">
-            <i class="bi bi-pencil"></i>
-          </button>` : ''}
-        
-        <button onclick="archiveTask(${t.id}, ${showArchived})" 
-                class="btn-cool btn-archive" 
-                title="${showArchived ? 'Restore' : 'Archive'}">
-          <i class="bi ${showArchived ? 'bi-arrow-counterclockwise' : 'bi-archive'}"></i>
-        </button>
-
-        <button onclick="deleteTask(${t.id})" class="btn-cool btn-delete" title="Delete">
-          <i class="bi bi-trash"></i>
-        </button>
-      </div>`;
-
-    // Modern Deadline Badge
     const dayInfo = calculateRemainingDays(t.deadline);
-    const deadlineBadge = dayInfo ? `
-      <div class="d-flex align-items-center mt-3 p-2 rounded-3" style="background: rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.03); font-size: 0.75rem;">
-        <i class="bi bi-calendar3 me-2" style="color: ${dayInfo.color}"></i>
-        <span class="fw-bold" style="color: ${dayInfo.color}">${dayInfo.text}</span>
-        <span class="ms-auto text-muted" style="font-size: 0.7rem;">${t.deadline}</span>
-      </div>
-    ` : '';
-
-    // Card Inner Content
+    
+    // HTML structure for the card
     card.innerHTML = `
-      <div class="d-flex justify-content-between align-items-start mb-2">
-        <span class="project-pill">
-          <i class="bi bi-bookmark-fill me-1" style="font-size: 0.6rem;"></i>
-          ${t.project || 'General'}
-        </span>
-        <span class="tag tag-${priorityKey}">${t.priority}</span>
+      <div class="card-click-area" style="cursor: pointer;">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="project-pill">${t.project || 'General'}</span>
+          <div class="d-flex align-items-center gap-2">
+             <span class="tag tag-${priorityKey}">${t.priority}</span>
+             <i class="bi bi-chevron-down expand-icon"></i>
+          </div>
+        </div>
+        <div class="card-title fw-bold mb-0">${t.title}</div>
       </div>
-      <div class="card-title fw-bold">${t.title}</div>
-      ${t.description ? `<p class="small text-muted mb-0" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${t.description}</p>` : ''}
-      ${deadlineBadge}
-      ${controlsHtml}`;
 
-    // Re-attach Drag Events
+      <div class="card-body-extra">
+        ${t.description ? `<p class="small text-muted mt-2 mb-0">${t.description}</p>` : ''}
+        
+        ${dayInfo ? `
+          <div class="d-flex align-items-center mt-3 p-2 rounded-3" style="background: rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.03); font-size: 0.75rem;">
+            <i class="bi bi-calendar3 me-2" style="color: ${dayInfo.color}"></i>
+            <span class="fw-bold" style="color: ${dayInfo.color}">${dayInfo.text}</span>
+            <span class="ms-auto text-muted">${t.deadline}</span>
+          </div>` : ''}
+
+        <div class="d-flex justify-content-end gap-2 mt-3 pt-3 border-top" style="border-color: rgba(0,0,0,0.05) !important;">
+          ${!showArchived ? `
+            <button onclick="openEdit(${t.id})" class="btn-cool btn-edit"><i class="bi bi-pencil"></i></button>` : ''}
+          <button onclick="archiveTask(${t.id}, ${showArchived})" class="btn-cool btn-archive">
+            <i class="bi ${showArchived ? 'bi-arrow-counterclockwise' : 'bi-archive'}"></i>
+          </button>
+          <button onclick="deleteTask(${t.id})" class="btn-cool btn-delete"><i class="bi bi-trash"></i></button>
+        </div>
+      </div>
+    `;
+
+    // Toggle Expansion Event
+    card.querySelector('.card-click-area').addEventListener('click', () => {
+      card.classList.toggle('expanded');
+    });
+
     if (!showArchived) {
       card.addEventListener('dragstart', e => {
         e.dataTransfer.setData('text/plain', t.id);
