@@ -73,13 +73,15 @@ def add_task(
     column: str = "Backlog",
     priority: str = "Medium",
     project: str = "Default",
+    date_added: Optional[str] = None,
+    deadline: Optional[str] = None,
     db_path: str = "kanban_board.db",
 ) -> int:
     conn = _connect(db_path)
     cur = conn.cursor()
     cur.execute(
-        "INSERT INTO tasks (title, description, column, priority, project) VALUES (?, ?, ?, ?, ?)",
-        (title, description, column, priority, project),
+        "INSERT INTO tasks (title, description, column, priority, project, date_added, deadline) VALUES (?, ?, ?, ?, ?)",
+        (title, description, column, priority, project, date_added, deadline),
     )
     conn.commit()
     task_id = cur.lastrowid
