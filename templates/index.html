@@ -57,27 +57,98 @@
         border-radius: 30px; padding: 20px; min-height: 70vh;
       }
 
+      /* Enhanced Glassmorphism & Depth */
       .card-item {
-        background: var(--glass-bg);
-        border-radius: 20px; padding: 18px; margin-bottom: 15px;
-        box-shadow: var(--card-shadow);
-        border: 1px solid rgba(255,255,255,0.05);
-        cursor: grab;
+          background: rgba(255, 255, 255, 0.85);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border: 1px solid rgba(255, 255, 255, 0.4);
+          border-radius: 18px;
+          padding: 20px;
+          margin-bottom: 20px;
+          box-shadow: 
+              0 4px 6px -1px rgba(0, 0, 0, 0.05), 
+              0 10px 15px -3px rgba(0, 0, 0, 0.1);
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          position: relative;
+          overflow: hidden;
       }
 
+      .card-item:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+          background: rgba(255, 255, 255, 0.95);
+      }
+
+      /* Priority Left-Border Indicator */
+      .card-item::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 0;
+          bottom: 0;
+          width: 6px;
+          border-radius: 6px 0 0 6px;
+      }
+      .card-priority-high::before { background: #ef4444; }
+      .card-priority-medium::before { background: #f59e0b; }
+      .card-priority-low::before { background: #10b981; }
+
+      /* Refined Typography */
+      .card-title {
+          font-size: 1.05rem;
+          color: #1e293b;
+          letter-spacing: -0.01em;
+          line-height: 1.4;
+          margin-bottom: 8px;
+      }
+
+      /* Modern Badges */
       .project-pill {
-        font-size: 0.65rem; background: var(--accent);
-        color: white; padding: 2px 8px; border-radius: 6px;
-        font-weight: 700; text-transform: uppercase;
+          font-size: 0.7rem;
+          background: rgba(37, 99, 235, 0.1);
+          color: var(--accent);
+          padding: 4px 10px;
+          border-radius: 8px;
+          font-weight: 700;
+          border: 1px solid rgba(37, 99, 235, 0.2);
       }
 
       .tag {
-        font-size: 0.7rem; font-weight: 600;
-        padding: 4px 10px; border-radius: 20px; color: white;
+          font-size: 0.65rem;
+          font-weight: 800;
+          padding: 4px 12px;
+          border-radius: 20px;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
       }
-      .tag-low { background: #10b981; }
-      .tag-medium { background: #f59e0b; }
-      .tag-high { background: #ef4444; }
+      .tag-low { background: #dcfce7; color: #166534; }
+      .tag-medium { background: #fef3c7; color: #92400e; }
+      .tag-high { background: #fee2e2; color: #991b1b; }
+
+      /* Action Buttons refined */
+      .btn-cool {
+          width: 32px;
+          height: 32px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 10px;
+          background: white;
+          border: 1px solid #e2e8f0;
+          color: #64748b;
+          transition: all 0.2s;
+      }
+
+      .btn-edit:hover { color: var(--accent); border-color: var(--accent); background: #eff6ff; }
+      .btn-delete:hover { color: #ef4444; border-color: #ef4444; background: #fef2f2; }
+
+      /* Lane visual polish */
+      .lane-container {
+          background: rgba(255, 255, 255, 0.3);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          backdrop-filter: blur(5px);
+      }
 
       .edit-form {
         background: rgba(128, 128, 128, 0.05);
@@ -227,67 +298,75 @@ async function render() {
     col.className = showArchived ? 'col-12' : 'col-md-4';
     col.innerHTML = `
       <div class="lane-container">
-        <div class="fw-bold mb-3 opacity-75">${s}</div>
+        <div class="fw-bold mb-3 opacity-75 d-flex align-items-center">
+          <span class="dot me-2"></span> ${s}
+        </div>
         <div class="lane" id="lane-${s}" style="min-height: 200px;"></div>
       </div>`;
     board.appendChild(col);
   });
 
   tasks.forEach(t => {
-    // FIXED FILTERING LOGIC:
-    // A task is "Archived" if its column name is "Archived"
     const isTaskArchived = (t.column === 'Archived');
-
-    // If we are in Archived view, hide non-archived tasks.
-    // If we are in Board view, hide archived tasks.
     if (isTaskArchived !== showArchived) return;
 
     const laneId = 'lane-' + t.column;
     const lane = document.getElementById(laneId);
     if (!lane) return;
 
+    // Create Card Element
     const card = document.createElement('div');
-    card.className = 'card-item';
+    
+    // Applying the New Professional Classes
+    const priorityKey = t.priority ? t.priority.toLowerCase() : 'medium';
+    card.className = `card-item card-priority-${priorityKey}`;
     card.draggable = !showArchived;
     card.dataset.id = t.id;
 
+    // Professional Action Buttons
     const controlsHtml = `
-      <div class="d-flex justify-content-end gap-2 controls">
+      <div class="d-flex justify-content-end gap-2 mt-3 pt-3 border-top" style="border-color: rgba(0,0,0,0.05) !important;">
         ${!showArchived ? `
-          <button onclick="openEdit(${t.id})" class="btn-cool btn-edit btn-sm">
-            <i class="bi bi-pencil-fill"></i>
+          <button onclick="openEdit(${t.id})" class="btn-cool btn-edit" title="Edit">
+            <i class="bi bi-pencil"></i>
           </button>` : ''}
         
         <button onclick="archiveTask(${t.id}, ${showArchived})" 
-                class="btn-cool btn-archive btn-sm" 
-                title="${showArchived ? 'Restore to Board' : 'Archive Task'}">
-          <i class="bi ${showArchived ? 'bi-arrow-up-right-circle-fill' : 'bi-archive-fill'}"></i>
+                class="btn-cool btn-archive" 
+                title="${showArchived ? 'Restore' : 'Archive'}">
+          <i class="bi ${showArchived ? 'bi-arrow-counterclockwise' : 'bi-archive'}"></i>
         </button>
 
-        <button onclick="deleteTask(${t.id})" class="btn-cool btn-delete btn-sm">
-          <i class="bi bi-trash-fill"></i>
+        <button onclick="deleteTask(${t.id})" class="btn-cool btn-delete" title="Delete">
+          <i class="bi bi-trash"></i>
         </button>
       </div>`;
 
+    // Modern Deadline Badge
     const dayInfo = calculateRemainingDays(t.deadline);
     const deadlineBadge = dayInfo ? `
-      <div class="d-flex align-items-center mt-2 p-2 rounded-3" style="background: rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.05); font-size: 0.7rem;">
-        <i class="bi bi-clock-history me-2" style="color: ${dayInfo.color}"></i>
+      <div class="d-flex align-items-center mt-3 p-2 rounded-3" style="background: rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.03); font-size: 0.75rem;">
+        <i class="bi bi-calendar3 me-2" style="color: ${dayInfo.color}"></i>
         <span class="fw-bold" style="color: ${dayInfo.color}">${dayInfo.text}</span>
-        <span class="ms-auto text-muted">${t.deadline}</span>
+        <span class="ms-auto text-muted" style="font-size: 0.7rem;">${t.deadline}</span>
       </div>
     ` : '';
 
+    // Card Inner Content
     card.innerHTML = `
-      <div class="d-flex justify-content-between mb-2">
-        <span class="project-pill">${t.project || 'General'}</span>
-        <span class="tag tag-${t.priority.toLowerCase()}">${t.priority}</span>
+      <div class="d-flex justify-content-between align-items-start mb-2">
+        <span class="project-pill">
+          <i class="bi bi-bookmark-fill me-1" style="font-size: 0.6rem;"></i>
+          ${t.project || 'General'}
+        </span>
+        <span class="tag tag-${priorityKey}">${t.priority}</span>
       </div>
       <div class="card-title fw-bold">${t.title}</div>
-      <p class="small text-muted mb-3" style="font-size:0.85rem">${t.description || ''}</p>
+      ${t.description ? `<p class="small text-muted mb-0" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${t.description}</p>` : ''}
       ${deadlineBadge}
       ${controlsHtml}`;
 
+    // Re-attach Drag Events
     if (!showArchived) {
       card.addEventListener('dragstart', e => {
         e.dataTransfer.setData('text/plain', t.id);
