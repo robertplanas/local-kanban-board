@@ -522,6 +522,16 @@
                 </select>
               </div>
             </div>
+
+            <div class="input-group-wrapper">
+                <label class="input-label-custom">Subtasks</label>
+                <div id="subtask-input-container">
+                    </div>
+                <button type="button" class="btn btn-sm btn-outline-primary mt-2 w-100" onclick="addSubtaskInput()">
+                    <i class="bi bi-plus"></i> Add Subtask
+                </button>
+            </div>
+
             <button id="add-task" class="w-100">
               <i class="bi bi-plus-lg"></i>
               <span>Create Task</span>
@@ -572,6 +582,12 @@
                 </select>
               </div>
             </div>
+            <label class="small fw-bold mt-2 opacity-75">Subtasks</label>
+            <div id="edit-subtask-container" class="mb-2">
+                </div>
+            <button type="button" class="btn btn-sm btn-outline-secondary w-100 mb-3" onclick="addEditSubtaskInput()">
+                <i class="bi bi-plus"></i> Add Subtask
+            </button>
           </div>
           <div class="modal-footer border-0 pt-0">
             <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
@@ -662,6 +678,21 @@ async function render() {
 
     const dayInfo = calculateRemainingDays(t.deadline);
     
+    const subtasks = JSON.parse(t.subtasks || "[]");
+    const subtasksHtml = subtasks.length > 0 ? `
+        <div class="mt-3">
+            <label class="small fw-bold text-muted mb-1">Checklist</label>
+            <ul class="list-unstyled mb-0">
+                ${subtasks.map(st => `
+                    <li class="small d-flex align-items-start gap-2 mb-1">
+                        <i class="bi bi-circle text-muted" style="font-size: 0.6rem; margin-top: 5px;"></i>
+                        <span>${st}</span>
+                    </li>
+                `).join('')}
+            </ul>
+        </div>
+    ` : '';
+
     // HTML structure for the card
     card.innerHTML = `
       <div class="card-click-area" style="cursor: pointer;">
@@ -684,6 +715,8 @@ async function render() {
             <span class="fw-bold" style="color: ${dayInfo.color}">${dayInfo.text}</span>
             <span class="ms-auto text-muted">${t.deadline}</span>
           </div>` : ''}
+        
+        ${subtasksHtml}
 
         <div class="d-flex justify-content-end gap-2 mt-3 pt-3 border-top" style="border-color: rgba(0,0,0,0.05) !important;">
           ${!showArchived ? `
@@ -745,17 +778,7 @@ window.deleteTask = async (id) => {
   render();
 };
 
-window.openEdit = async (id) => {
-  const newTitle = prompt("New Title:");
-  if (newTitle) {
-    await fetch(`/api/task/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: newTitle })
-    });
-    render();
-  }
-};
+
 
 // 4. Drag and Drop Logic
 function setupDragAndDrop() {
@@ -784,6 +807,17 @@ function setupDragAndDrop() {
   });
 }
 
+function addSubtaskInput() {
+    const container = document.getElementById('subtask-input-container');
+    const div = document.createElement('div');
+    div.className = 'd-flex gap-2 mb-2';
+    div.innerHTML = `
+        <input class="form-control form-control-custom mb-0 subtask-item" placeholder="Task item...">
+        <button class="btn btn-outline-danger btn-sm" onclick="this.parentElement.remove()"><i class="bi bi-x"></i></button>
+    `;
+    container.appendChild(div);
+}
+
 // 5. Setup & Initialization
 async function populateProjects() {
   const currentSelection = projectSelect.value;
@@ -802,25 +836,33 @@ async function populateProjects() {
 }
 
 document.getElementById('add-task').addEventListener('click', async () => {
+
+  const subtaskNodes = document.querySelectorAll('.subtask-item');
+  const subtasks = Array.from(subtaskNodes).map(input => input.value).filter(v => v.trim() !== "");
+
   const payload = {
     title: document.getElementById('new-title').value,
     description: document.getElementById('new-desc').value,
     column: document.getElementById('new-column').value,
     priority: document.getElementById('new-priority').value,
     project: document.getElementById('new-project').value || 'General',
-    deadline: document.getElementById('new-deadline').value === "" ? null : document.getElementById('new-deadline').value
+    deadline: document.getElementById('new-deadline').value === "" ? null : document.getElementById('new-deadline').value,
+    subtasks: subtasks
   };
-  await fetch('/api/task', { 
+  const res = await fetch('/api/task', { 
     method: 'POST', 
     headers: { 'Content-Type': 'application/json' }, 
     body: JSON.stringify(payload) 
   });
-  // Reset form
-  document.getElementById('new-title').value = '';
-  document.getElementById('new-desc').value = '';
-  document.getElementById('new-project').value = '';
-  await populateProjects();
-  render();
+
+  if (res.ok){
+    // Reset form
+    document.getElementById('new-title').value = '';
+    document.getElementById('new-desc').value = '';
+    document.getElementById('new-project').value = '';
+    await populateProjects();
+    render();
+  }
 });
 
 archivedBtn.addEventListener('click', () => {
@@ -834,6 +876,21 @@ projectSelect.addEventListener('change', render);
 
 // Initial start
 populateProjects().then(render);
+
+
+function addEditSubtaskInput(value = "") {
+    const container = document.getElementById('edit-subtask-container');
+    const div = document.createElement('div');
+    div.className = 'd-flex gap-2 mb-2';
+    div.innerHTML = `
+        <input class="form-control form-control-custom mb-0 edit-subtask-item" 
+               placeholder="Task item..." value="${value}">
+        <button class="btn btn-outline-danger btn-sm" onclick="this.parentElement.remove()">
+            <i class="bi bi-x"></i>
+        </button>
+    `;
+    container.appendChild(div);
+}
 
 window.openEdit = async (id) => {
   try {
@@ -853,7 +910,12 @@ window.openEdit = async (id) => {
     document.getElementById('edit-column').value = task.column;
     document.getElementById('edit-deadline').value = task.deadline || '';
 
-    // Show the modal
+    // Clear and populate subtasks
+    const container = document.getElementById('edit-subtask-container');
+    container.innerHTML = '';
+    const subtasks = JSON.parse(task.subtasks || "[]");
+    subtasks.forEach(st => addEditSubtaskInput(st));
+
     const editModal = new bootstrap.Modal(document.getElementById('editModal'));
     editModal.show();
   } catch (err) {
@@ -865,13 +927,17 @@ window.openEdit = async (id) => {
 window.saveEdit = async () => {
   const id = document.getElementById('edit-id').value;
   
+  const subtaskNodes = document.querySelectorAll('.edit-subtask-item');
+  const subtasks = Array.from(subtaskNodes).map(input => input.value).filter(v => v.trim() !== "");
+
   const payload = {
     title: document.getElementById('edit-title').value,
     project: document.getElementById('edit-project').value,
     description: document.getElementById('edit-desc').value,
     priority: document.getElementById('edit-priority').value,
     column: document.getElementById('edit-column').value,
-    deadline: document.getElementById('edit-deadline').value
+    deadline: document.getElementById('edit-deadline').value, 
+    subtasks: subtasks
   };
 
   try {

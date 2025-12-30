@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 import db
 from pathlib import Path
+import json
 
 app = Flask(__name__, static_folder="static", template_folder="templates")
 DB_PATH = "kanban_board.db"
@@ -29,6 +30,7 @@ def api_add_task():
     project = data.get("project", "Default")
     date_added = data.get("date_added", None)
     deadline = data.get("deadline", None)
+    subtasks = data.get("subtasks", [])
     if not title:
         return jsonify({"error": "title required"}), 400
     tid = db.add_task(
@@ -39,6 +41,7 @@ def api_add_task():
         project=project,
         date_added=date_added,
         deadline=deadline,
+        subtasks=json.dumps(subtasks),
         db_path=DB_PATH,
     )
     return jsonify({"id": tid})
@@ -92,12 +95,16 @@ def api_delete(task_id):
 def api_update_task(task_id):
     data = request.json or {}
     # Allowed fields: title, description, priority, column, project
+
+    subtasks = data.get("subtasks", None)
+
     title = data.get("title")
     description = data.get("description")
     priority = data.get("priority")
     column = data.get("column")
     project = data.get("project")
     deadline = data.get("deadline", None)
+    subtasks = json.dumps(subtasks) if subtasks is not None else None
 
     try:
         db.update_task(
@@ -108,6 +115,7 @@ def api_update_task(task_id):
             column=column,
             project=project,
             deadline=deadline,
+            subtasks=subtasks,
             db_path=DB_PATH,
         )
         return jsonify({"updated": True})

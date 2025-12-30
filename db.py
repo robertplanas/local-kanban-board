@@ -19,7 +19,8 @@ def init_db(db_path: str = "kanban_board.db") -> None:
             priority TEXT,
             project TEXT DEFAULT 'Default',
             date_added DATETIME DEFAULT CURRENT_TIMESTAMP,
-            deadline DATETIME DEFAULT (DATETIME('now', '+1 day'))
+            deadline DATETIME DEFAULT (DATETIME('now', '+1 day')), 
+            subtasks TEXT DEFAULT '[]'
         )
         """
     )
@@ -75,13 +76,14 @@ def add_task(
     project: str = "Default",
     date_added: Optional[str] = None,
     deadline: Optional[str] = None,
+    subtasks: str = "[]",
     db_path: str = "kanban_board.db",
 ) -> int:
     conn = _connect(db_path)
     cur = conn.cursor()
     cur.execute(
-        "INSERT INTO tasks (title, description, column, priority, project, date_added, deadline) VALUES (?, ?, ?, ?, ?,?,?)",
-        (title, description, column, priority, project, date_added, deadline),
+        "INSERT INTO tasks (title, description, column, priority, project, date_added, deadline, subtasks) VALUES (?, ?, ?, ?, ?,?,?, ?)",
+        (title, description, column, priority, project, date_added, deadline, subtasks),
     )
     conn.commit()
     task_id = cur.lastrowid
@@ -106,6 +108,7 @@ def update_task(
     project: Optional[str] = None,
     date_added: Optional[str] = None,
     deadline: Optional[str] = None,
+    subtasks: Optional[str] = None,
     db_path: str = "kanban_board.db",
 ) -> None:
     conn = _connect(db_path)
@@ -133,6 +136,9 @@ def update_task(
     if deadline is not None:
         fields.append("deadline = ?")
         params.append(deadline)
+    if subtasks is not None:
+        fields.append("subtasks = ?")
+        params.append(subtasks)
     params.append(task_id)
     if fields:
         cur.execute(f"UPDATE tasks SET {', '.join(fields)} WHERE id = ?", params)
