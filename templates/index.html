@@ -687,24 +687,37 @@ async function render() {
     const completedSubtasks = subtasks.filter(st => st.completed).length;
     const progressPercent = totalSubtasks > 0 ? Math.round((completedSubtasks / totalSubtasks) * 100) : 0;
     
-const subtasksHtml = totalSubtasks > 0 ? `
+    const progressBarHtml = totalSubtasks > 0 ? `
         <div class="mt-3">
-            <div class="d-flex justify-content-between align-items-center mb-1">
-                <label class="small fw-bold text-muted">Progress</label>
-                <span class="small text-muted">${progressPercent}%</span>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="text-uppercase fw-bold text-muted" style="font-size: 0.6rem; letter-spacing: 0.08em;">
+                    Task Completion
+                </span>
+                <span class="fw-bold" style="font-size: 0.75rem; color: var(--accent);">
+                    ${progressPercent}%
+                </span>
             </div>
-            <div class="progress mb-3" style="height: 6px; border-radius: 10px; background: rgba(0,0,0,0.05);">
+            <div class="progress" style="height: 6px; border-radius: 20px; background: rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.02); overflow: visible;">
                 <div class="progress-bar" role="progressbar" 
-                    style="width: ${progressPercent}%; background: var(--accent); transition: width 0.4s ease;" 
-                    aria-valuenow="${progressPercent}" aria-valuemin="0" aria-valuemax="100"></div>
+                    style="width: ${progressPercent}%; 
+                           background: linear-gradient(90deg, #60a5fa 0%, var(--accent) 100%); 
+                           border-radius: 20px; 
+                           box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+                           transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);" 
+                    aria-valuenow="${progressPercent}" aria-valuemin="0" aria-valuemax="100">
+                </div>
             </div>
+        </div>
+    ` : '';
+
+    const subtaskListHtml = totalSubtasks > 0 ? `
+        <div class="mt-3 border-top pt-3" style="border-color: rgba(0,0,0,0.05) !important;">
             <label class="small fw-bold text-muted mb-2">Checklist</label>
             <ul class="list-unstyled mb-0">
                 ${subtasks.map((st, index) => `
                   <li class="small d-flex align-items-center gap-2 mb-2">
                       <input type="checkbox" class="form-check-input mt-0" 
                             ${st.completed ? 'checked' : ''} 
-                            /* Fix 1: stopPropagation prevents card collapse */
                             onclick="event.stopPropagation(); toggleSubtask(${t.id}, ${index}, event)"
                             style="cursor: pointer; width: 1.1rem; height: 1.1rem;">
                       <span class="subtask-text" 
@@ -729,6 +742,8 @@ const subtasksHtml = totalSubtasks > 0 ? `
           </div>
         </div>
         <div class="card-title fw-bold mb-0">${t.title}</div>
+        
+        ${progressBarHtml}
       </div>
 
       <div class="card-body-extra">
@@ -740,7 +755,7 @@ const subtasksHtml = totalSubtasks > 0 ? `
             <span class="ms-auto text-muted">${t.deadline}</span>
           </div>` : ''}
         
-        ${subtasksHtml}
+        ${subtaskListHtml}
 
         <div class="d-flex justify-content-end gap-2 mt-3 pt-3 border-top" style="border-color: rgba(0,0,0,0.05) !important;">
           ${!showArchived ? `<button onclick="openEdit(${t.id})" class="btn-cool btn-edit"><i class="bi bi-pencil"></i></button>` : ''}
