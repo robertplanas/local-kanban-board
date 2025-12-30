@@ -906,6 +906,9 @@ document.getElementById('add-task').addEventListener('click', async () => {
     document.getElementById('new-title').value = '';
     document.getElementById('new-desc').value = '';
     document.getElementById('new-project').value = '';
+    document.getElementById('new-deadline').value = '';
+    const subtaskContainer = document.getElementById('subtask-input-container');
+    subtaskContainer.innerHTML = '';
     await populateProjects();
     render();
   }
