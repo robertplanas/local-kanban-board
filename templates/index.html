@@ -602,6 +602,9 @@
 
 
    <script>
+
+
+const expandedTasks = new Set();
 const STATUSES = ["Backlog", "In Progress", "Done"];
 const archivedBtn = document.getElementById('show-archived-btn');
 const projectSelect = document.getElementById('project-filter');
@@ -673,34 +676,56 @@ async function render() {
     const card = document.createElement('div');
     const priorityKey = t.priority ? t.priority.toLowerCase() : 'medium';
     card.className = `card-item card-priority-${priorityKey}`;
+    if (expandedTasks.has(t.id)) card.classList.add('expanded');
     card.draggable = !showArchived;
     card.dataset.id = t.id;
 
     const dayInfo = calculateRemainingDays(t.deadline);
     
     const subtasks = JSON.parse(t.subtasks || "[]");
-    const subtasksHtml = subtasks.length > 0 ? `
+    const totalSubtasks = subtasks.length;
+    const completedSubtasks = subtasks.filter(st => st.completed).length;
+    const progressPercent = totalSubtasks > 0 ? Math.round((completedSubtasks / totalSubtasks) * 100) : 0;
+    
+const subtasksHtml = totalSubtasks > 0 ? `
         <div class="mt-3">
-            <label class="small fw-bold text-muted mb-1">Checklist</label>
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <label class="small fw-bold text-muted">Progress</label>
+                <span class="small text-muted">${progressPercent}%</span>
+            </div>
+            <div class="progress mb-3" style="height: 6px; border-radius: 10px; background: rgba(0,0,0,0.05);">
+                <div class="progress-bar" role="progressbar" 
+                    style="width: ${progressPercent}%; background: var(--accent); transition: width 0.4s ease;" 
+                    aria-valuenow="${progressPercent}" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+            <label class="small fw-bold text-muted mb-2">Checklist</label>
             <ul class="list-unstyled mb-0">
-                ${subtasks.map(st => `
-                    <li class="small d-flex align-items-start gap-2 mb-1">
-                        <i class="bi bi-circle text-muted" style="font-size: 0.6rem; margin-top: 5px;"></i>
-                        <span>${st}</span>
-                    </li>
-                `).join('')}
+                ${subtasks.map((st, index) => `
+                  <li class="small d-flex align-items-center gap-2 mb-2">
+                      <input type="checkbox" class="form-check-input mt-0" 
+                            ${st.completed ? 'checked' : ''} 
+                            /* Fix 1: stopPropagation prevents card collapse */
+                            onclick="event.stopPropagation(); toggleSubtask(${t.id}, ${index}, event)"
+                            style="cursor: pointer; width: 1.1rem; height: 1.1rem;">
+                      <span class="subtask-text" 
+                            onclick="event.stopPropagation()" 
+                            style="${st.completed ? 'text-decoration: line-through; opacity: 0.6;' : ''}">
+                          ${st.text}
+                      </span>
+                  </li>
+              `).join('')}
             </ul>
         </div>
     ` : '';
 
-    // HTML structure for the card
+    // Unified Card Template
     card.innerHTML = `
       <div class="card-click-area" style="cursor: pointer;">
         <div class="d-flex justify-content-between align-items-center mb-2">
           <span class="project-pill">${t.project || 'General'}</span>
           <div class="d-flex align-items-center gap-2">
-             <span class="tag tag-${priorityKey}">${t.priority}</span>
-             <i class="bi bi-chevron-down expand-icon"></i>
+            <span class="tag tag-${priorityKey}">${t.priority}</span>
+            <i class="bi bi-chevron-down expand-icon"></i>
           </div>
         </div>
         <div class="card-title fw-bold mb-0">${t.title}</div>
@@ -708,7 +733,6 @@ async function render() {
 
       <div class="card-body-extra">
         ${t.description ? `<p class="small text-muted mt-2 mb-0">${t.description}</p>` : ''}
-        
         ${dayInfo ? `
           <div class="d-flex align-items-center mt-3 p-2 rounded-3" style="background: rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.03); font-size: 0.75rem;">
             <i class="bi bi-calendar3 me-2" style="color: ${dayInfo.color}"></i>
@@ -719,8 +743,7 @@ async function render() {
         ${subtasksHtml}
 
         <div class="d-flex justify-content-end gap-2 mt-3 pt-3 border-top" style="border-color: rgba(0,0,0,0.05) !important;">
-          ${!showArchived ? `
-            <button onclick="openEdit(${t.id})" class="btn-cool btn-edit"><i class="bi bi-pencil"></i></button>` : ''}
+          ${!showArchived ? `<button onclick="openEdit(${t.id})" class="btn-cool btn-edit"><i class="bi bi-pencil"></i></button>` : ''}
           <button onclick="archiveTask(${t.id}, ${showArchived})" class="btn-cool btn-archive">
             <i class="bi ${showArchived ? 'bi-arrow-counterclockwise' : 'bi-archive'}"></i>
           </button>
@@ -729,9 +752,14 @@ async function render() {
       </div>
     `;
 
-    // Toggle Expansion Event
     card.querySelector('.card-click-area').addEventListener('click', () => {
       card.classList.toggle('expanded');
+      // Save the state to our global Set
+      if (card.classList.contains('expanded')) {
+        expandedTasks.add(t.id);
+      } else {
+        expandedTasks.delete(t.id);
+      }
     });
 
     if (!showArchived) {
@@ -838,7 +866,10 @@ async function populateProjects() {
 document.getElementById('add-task').addEventListener('click', async () => {
 
   const subtaskNodes = document.querySelectorAll('.subtask-item');
-  const subtasks = Array.from(subtaskNodes).map(input => input.value).filter(v => v.trim() !== "");
+  const subtasks = Array.from(subtaskNodes).map(input => ({
+      text: input.value,
+      completed: false
+  })).filter(v => v.text.trim() !== "");
 
   const payload = {
     title: document.getElementById('new-title').value,
@@ -878,13 +909,15 @@ projectSelect.addEventListener('change', render);
 populateProjects().then(render);
 
 
-function addEditSubtaskInput(value = "") {
+// Update the Edit Modal subtask input
+function addEditSubtaskInput(stObj = {text: "", completed: false}) {
     const container = document.getElementById('edit-subtask-container');
     const div = document.createElement('div');
-    div.className = 'd-flex gap-2 mb-2';
+    div.className = 'd-flex gap-2 mb-2 align-items-center';
     div.innerHTML = `
+        <input type="checkbox" class="form-check-input edit-subtask-status" ${stObj.completed ? 'checked' : ''}>
         <input class="form-control form-control-custom mb-0 edit-subtask-item" 
-               placeholder="Task item..." value="${value}">
+               placeholder="Task item..." value="${stObj.text}">
         <button class="btn btn-outline-danger btn-sm" onclick="this.parentElement.remove()">
             <i class="bi bi-x"></i>
         </button>
@@ -926,9 +959,11 @@ window.openEdit = async (id) => {
 // 2. Save the updated data to the server
 window.saveEdit = async () => {
   const id = document.getElementById('edit-id').value;
-  
-  const subtaskNodes = document.querySelectorAll('.edit-subtask-item');
-  const subtasks = Array.from(subtaskNodes).map(input => input.value).filter(v => v.trim() !== "");
+  const items = document.querySelectorAll('#edit-subtask-container .d-flex');
+  const subtasks = Array.from(items).map(div => ({
+        text: div.querySelector('.edit-subtask-item').value,
+        completed: div.querySelector('.edit-subtask-status').checked
+    })).filter(st => st.text.trim() !== "");
 
   const payload = {
     title: document.getElementById('edit-title').value,
@@ -978,6 +1013,48 @@ function calculateRemainingDays(deadlineStr) {
   if (diffDays <= 3) return { text: `${diffDays}d left`, color: '#f59e0b' }; // Orange
   return { text: `${diffDays} days left`, color: '#64748b' }; // Muted Grey
 }
+
+window.toggleSubtask = async (taskId, index, event) => {
+    if (event) event.stopPropagation();
+    
+    // 1. Get current tasks (locally or from server)
+    const [activeRes, archivedRes] = await Promise.all([
+        fetch('/api/tasks?archived=0'),
+        fetch('/api/tasks?archived=1')
+    ]);
+
+    const activeTasks = await activeRes.json();
+    const archivedTasks = await archivedRes.json();
+    const allTasks = [...activeTasks, ...archivedTasks];
+    const task = allTasks.find(t => t.id === taskId);
+
+    if (!task) {
+        console.error("Task not found with ID:", taskId);
+        return;
+    }
+
+    // Parse subtasks (handle if it's a string or already an object)
+    let subtasks = typeof task.subtasks === 'string' 
+        ? JSON.parse(task.subtasks || "[]") 
+        : (task.subtasks || []);
+
+    if (subtasks[index]) {
+        subtasks[index].completed = !subtasks[index].completed;
+    }
+
+    // Save back to server
+    const updateRes = await fetch(`/api/task/${taskId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subtasks: subtasks })
+    });
+
+    if (updateRes.ok) {
+        render(); // This recalculates the progress bar
+    } else {
+        console.error("Failed to save subtask state");
+    }
+};
 
 </script>
 
