@@ -1,10 +1,25 @@
+import sys
+import os
+import threading
+import webview  # <--- The new library
 from flask import Flask, render_template, request, jsonify
 import db
-from pathlib import Path
 import json
 
-app = Flask(__name__, static_folder="static", template_folder="templates")
-DB_PATH = "kanban_board.db"
+# --- CONFIGURATION ---
+if getattr(sys, "frozen", False):
+    base_dir = getattr(
+        sys, "_MEIPASS", os.path.dirname(os.path.abspath(sys.executable))
+    )
+    template_folder = os.path.join(base_dir, "templates")
+    static_folder = os.path.join(base_dir, "static")
+    app = Flask(__name__, template_folder=template_folder, static_folder=static_folder)
+else:
+    app = Flask(__name__, static_folder="static", template_folder="templates")
+
+# Save DB in User Home (Critical for Mac Apps)
+user_home = os.path.expanduser("~")
+DB_PATH = os.path.join(user_home, "kanban_board.db")
 
 
 @app.route("/")
@@ -12,6 +27,7 @@ def index():
     return render_template("index.html")
 
 
+# --- API ROUTES (Same as before) ---
 @app.route("/api/tasks")
 def api_tasks():
     include_archived = request.args.get("archived", "0") == "1"
@@ -24,24 +40,18 @@ def api_tasks():
 def api_add_task():
     data = request.json or {}
     title = data.get("title")
-    description = data.get("description", "")
-    column = data.get("column", "Backlog")
-    priority = data.get("priority", "Medium")
-    project = data.get("project", "Default")
-    date_added = data.get("date_added", None)
-    deadline = data.get("deadline", None)
-    subtasks = data.get("subtasks", [])
     if not title:
         return jsonify({"error": "title required"}), 400
+
     tid = db.add_task(
         title,
-        description,
-        column=column,
-        priority=priority,
-        project=project,
-        date_added=date_added,
-        deadline=deadline,
-        subtasks=json.dumps(subtasks),
+        data.get("description", ""),
+        column=data.get("column", "Backlog"),
+        priority=data.get("priority", "Medium"),
+        project=data.get("project", "Default"),
+        date_added=data.get("date_added"),
+        deadline=data.get("deadline"),
+        subtasks=json.dumps(data.get("subtasks", [])),
         db_path=DB_PATH,
     )
     return jsonify({"id": tid})
@@ -50,21 +60,11 @@ def api_add_task():
 @app.route("/api/task/<int:task_id>/move", methods=["POST"])
 def api_move(task_id):
     data = request.json or {}
-    # Accept an authoritative target column from the client: {"to": "In Progress"}
     to_col = data.get("to")
-    STATUSES = ["Backlog", "In Progress", "Done"]
-    if not to_col or to_col not in STATUSES:
-        return jsonify({"error": "invalid target column"}), 400
-
-    task = db.get_task(task_id, db_path=DB_PATH)
-    if not task:
-        return jsonify({"error": "task not found"}), 404
-
-    try:
-        db.move_task(task_id, to_col, db_path=DB_PATH)
-        return jsonify({"moved": True, "to": to_col})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    if not to_col:
+        return jsonify({"error": "invalid"}), 400
+    db.move_task(task_id, to_col, db_path=DB_PATH)
+    return jsonify({"moved": True})
 
 
 @app.route("/api/task/<int:task_id>/archive", methods=["POST"])
@@ -94,36 +94,40 @@ def api_delete(task_id):
 @app.route("/api/task/<int:task_id>", methods=["PUT", "PATCH"])
 def api_update_task(task_id):
     data = request.json or {}
-    # Allowed fields: title, description, priority, column, project
+    subtasks = data.get("subtasks")
+    db.update_task(
+        task_id,
+        title=data.get("title"),
+        description=data.get("description"),
+        priority=data.get("priority"),
+        column=data.get("column"),
+        project=data.get("project"),
+        deadline=data.get("deadline"),
+        subtasks=json.dumps(subtasks) if subtasks is not None else None,
+        db_path=DB_PATH,
+    )
+    return jsonify({"updated": True})
 
-    subtasks = data.get("subtasks", None)
 
-    title = data.get("title")
-    description = data.get("description")
-    priority = data.get("priority")
-    column = data.get("column")
-    project = data.get("project")
-    deadline = data.get("deadline", None)
-    subtasks = json.dumps(subtasks) if subtasks is not None else None
-
-    try:
-        db.update_task(
-            task_id,
-            title=title,
-            description=description,
-            priority=priority,
-            column=column,
-            project=project,
-            deadline=deadline,
-            subtasks=subtasks,
-            db_path=DB_PATH,
-        )
-        return jsonify({"updated": True})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+def start_server():
+    """Runs Flask in a separate thread"""
+    app.run(host="127.0.0.1", port=8502, threaded=True, use_reloader=False)
 
 
 if __name__ == "__main__":
-    # ensure DB exists
     db.init_db(DB_PATH)
-    app.run(port=8502, debug=True)
+
+    # 1. Start Flask in the background
+    t = threading.Thread(target=start_server, daemon=True)
+    t.start()
+
+    # 2. Start the Native Window
+    # This blocks execution until the window is closed
+    webview.create_window(
+        "Personal Kanban",
+        "http://127.0.0.1:8502",
+        width=1200,
+        height=800,
+        resizable=True,
+    )
+    webview.start()
