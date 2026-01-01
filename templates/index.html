@@ -262,39 +262,51 @@
         /* --- Kanban Lanes --- */
         .lane-wrapper {
             background: var(--lane-bg);
-            border: 1px solid transparent; 
             border-radius: var(--radius-card);
             padding: 16px;
             height: calc(100vh - 140px);
             max-height: calc(100vh - 140px);
-            min-height: 75vh;
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            border-top: 4px solid transparent; /* Prepare for colored border */
+            transition: all 0.3s ease;
         }
 
+        /* Status Specific Styles */
+        .lane-col-backlog .lane-wrapper   { border-top-color: #64748b; } /* Slate */
+        .lane-col-requested .lane-wrapper { border-top-color: #8b5cf6; } /* Violet */
+        .lane-col-progress .lane-wrapper  { border-top-color: #f59e0b; } /* Amber */
+        .lane-col-done .lane-wrapper      { border-top-color: #10b981; } /* Emerald */
+
+        /* Header Styling */
         .lane-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            padding: 0 4px;
-            flex-shrink: 0;
+            margin-bottom: 16px;
+            padding: 8px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.5); /* Subtle shine */
         }
 
         .lane-title {
-            font-size: 0.95rem;
-            font-weight: 700;
+            font-size: 0.85rem;
+            font-weight: 800;
             color: var(--text-main);
             letter-spacing: 0.5px;
             text-transform: uppercase;
         }
 
+        /* Make the count pill match the border color */
+        .lane-col-backlog .lane-count   { background: #e2e8f0; color: #475569; }
+        .lane-col-requested .lane-count { background: #ede9fe; color: #7c3aed; }
+        .lane-col-progress .lane-count  { background: #fef3c7; color: #d97706; }
+        .lane-col-done .lane-count      { background: #d1fae5; color: #059669; }
+
         .lane-count {
-            background: var(--border-color);
-            color: var(--text-secondary);
-            padding: 2px 10px;
-            border-radius: 12px;
+            padding: 2px 8px;
+            border-radius: 6px;
             font-size: 0.75rem;
             font-weight: 700;
         }
