@@ -12,7 +12,7 @@
         :root {
             --bg-body: #f3f4f6;       /* Light Grey */
             --bg-surface: #ffffff;    /* White */
-            --bg-app-bar: rgba(255, 255, 255, 0.9);
+            --bg-app-bar: transparent;
             
             --text-main: #111827;     /* Almost Black */
             --text-secondary: #6b7280; 
@@ -63,34 +63,40 @@
         ::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
 
         /* --- App Bar --- */
+        /* --- Polished Header --- */
         .app-bar {
-            background: var(--bg-app-bar); /* Uses the variable */
-            backdrop-filter: blur(12px);
+            background: transparent; /* No background color */
+            backdrop-filter: blur(12px); /* Frosted glass effect */
             border-bottom: 1px solid var(--border-color);
-            padding: 16px 32px;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
+            
+            height: 72px;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            
+            position: sticky;
+            top: 10px;
+            margin: 0 16px 16px 16px;
+            z-index: 1000;
         }
 
-        .brand-logo {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--text-main);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            letter-spacing: -0.5px;
+        /* Fix chip alignment inside header */
+        .app-bar .chip-container {
+            margin-bottom: 0 !important;
+            padding-left: 2px; /* Slight offset for focus rings */
         }
 
-        .brand-logo i { 
-            color: var(--primary); 
-            filter: drop-shadow(0 0 8px var(--primary-glow));
+        /* --- The "Pro" Scroll Mask --- */
+        /* This creates a fade-out effect on the right side of the chips */
+        .chip-scroll-mask {
+            position: relative;
+            overflow: hidden;
+            /* Mask: Solid on left, transparent on right edge */
+            mask-image: linear-gradient(to right, black 90%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to right, black 90%, transparent 100%);
         }
 
+        /* --- Archive Button --- */
         .btn-archive-toggle {
             border: 1px solid var(--border-color);
             background: transparent;
@@ -180,47 +186,77 @@
 
         }
 
-        /* --- Projects Chips (Filter) --- */
         .chip-container {
             display: flex;
             gap: 10px;
             overflow-x: auto;
-            padding-bottom: 4px;
+            padding: 4px; /* Padding for shadow space */
             margin-bottom: 20px;
-            scrollbar-width: none;
+            scrollbar-width: none; /* Hide scrollbar Firefox */
+            -ms-overflow-style: none;
+            align-items: center;
         }
-        
+
+        .chip-container::-webkit-scrollbar { 
+            display: none; /* Hide scrollbar Chrome/Safari */
+        }
+
         .chip {
-            background: var(--bg-surface);
+            /* Base State: Matches "Archive" button inactive state */
+            background: transparent;
             border: 1px solid var(--border-color);
-            border-radius: 8px;
+            border-radius: var(--radius-pill); /* Uses your 8px variable */
             padding: 8px 18px;
             font-size: 0.85rem;
-            font-weight: 500;
+            font-weight: 600;
             color: var(--text-secondary);
             cursor: pointer;
             white-space: nowrap;
+            transition: all 0.2s ease;
+            
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Hover State: Blue Border + Blue Text (Matches Archive Hover) */
+        .chip:hover { 
+            border-color: var(--primary);
+            color: var(--primary);
+            background: var(--bg-surface);
+        }
+
+        /* Active State: Solid Blue Background (Matches Archive Active) */
+        .chip.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px var(--primary-glow);
+        }
+
+        /* Counter Badge Styling */
+        .chip-count {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 6px;
+            
+            /* Default: Light Grey background */
+            background: var(--border-color);
+            color: var(--text-secondary);
             transition: all 0.2s;
         }
 
-        .chip:hover { 
-            background: var(--bg-surface-hover); 
-            color: var(--text-main);
-        }
-        
-        .chip.active {
-            background: var(--chip-active-bg);
-            color: var(--chip-active-text);
-            border-color: var(--chip-active-border);
+        .chip:hover .chip-count {
+            /* Optional: On hover, tint the badge slightly blue */
+            background: rgba(59, 130, 246, 0.1); 
+            color: var(--primary);
         }
 
-        .chip-count {
-            font-size: 0.7rem;
-            margin-left: 8px;
-            opacity: 0.6;
-            background: rgba(255,255,255,0.1);
-            padding: 1px 6px;
-            border-radius: 4px;
+        .chip.active .chip-count {
+            /* Active: Semi-transparent white to match blue bg */
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
         }
 
         /* --- Kanban Lanes --- */
@@ -230,7 +266,7 @@
             border-radius: var(--radius-card);
             padding: 16px;
             height: calc(100vh - 140px);
-            max-height: calc(100vh - 200px);
+            max-height: calc(100vh - 140px);
             min-height: 75vh;
             display: flex;
             flex-direction: column;
@@ -471,17 +507,19 @@
 </head>
 <body>
 
-    <header class="app-bar">
-        <div class="brand-logo">
-            <i class="bi bi-kanban-fill"></i>
-            <span>Personal Kanban</span>
+    <header class="app-bar ps-4 pe-4">
+        <div class="d-flex align-items-center flex-grow-1 overflow-hidden position-relative" style="min-width: 0; margin-right: 24px;">
+            <div class="chip-scroll-mask w-100">
+                <div id="project-nav" class="chip-container mb-0"></div>
+            </div>
         </div>
-        <div class="d-flex gap-3">
-            <button class="btn-primary-material py-2 px-4" data-bs-toggle="modal" data-bs-target="#createModal" style="width: auto; font-size: 0.9rem;">
-                <i class="bi bi-plus-lg me-2"></i>New Task
+
+        <div class="d-flex gap-2 flex-shrink-0">
+            <button class="btn-primary-material py-2 px-3" data-bs-toggle="modal" data-bs-target="#createModal" style="width: auto; font-size: 0.9rem;">
+                <i class="bi bi-plus-lg me-2"></i><span class="d-none d-sm-inline">New Task</span>
             </button>
             <button id="show-archived-btn" class="btn-archive-toggle">
-                <i class="bi bi-archive me-2"></i>Archive
+                <i class="bi bi-archive me-2"></i><span class="d-none d-sm-inline">Archive</span>
             </button>
         </div>
     </header>
@@ -489,13 +527,7 @@
     <div class="container-fluid px-4 py-4">
         <div class="row g-4">
             <div class="col-12">
-                <div class="d-flex align-items-center mb-3">
-                    <i class="bi bi-funnel-fill text-secondary me-3"></i>
-                    <div id="project-nav" class="chip-container"></div>
-                </div>
-
-                <div class="row g-4" id="board">
-                    </div>
+                <div class="row g-4" id="board"> </div>
             </div>
         </div>
     </div>
