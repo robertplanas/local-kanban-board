@@ -9,45 +9,50 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        :root {
-            --bg-body: #f3f4f6;       /* Light Grey */
-            --bg-surface: #ffffff;    /* White */
-            --bg-app-bar: transparent;
-            
-            --text-main: #111827;     /* Almost Black */
-            --text-secondary: #6b7280; 
+:root {
+    --bg-body: #f3f4f6;
+    --bg-surface: #ffffff;
+    --bg-app-bar: transparent;
+    
+    --text-main: #111827;
+    --text-secondary: #6b7280; 
 
-            --primary: #3b82f6;       /* Blue */
-            --primary-hover: #2563eb;
-            --primary-glow: rgba(59, 130, 246, 0.3);
-            
-            --border-color: #e5e7eb;
-            
-            --lane-bg: #e5e7eb;       /* Darker grey for lane track */
-            
-            --card-bg: #ffffff;
-            --card-border: transparent;
-            --card-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+    /* --- CHANGED: SLATE GREY (The Balance) --- */
+    /* Dark enough for white text, soft enough to not look like a void */
+    --primary: #475569;       /* Slate 600 - A cool, professional grey */
+    --primary-hover: #334155; /* Slate 700 - Slightly darker on hover */
+    --primary-glow: rgba(71, 85, 105, 0.4);
+    /* ----------------------------------------- */
+    
+    --border-color: #e5e7eb;
+    
+    --lane-bg: #e5e7eb;
+    
+    --card-bg: #ffffff;
+    --card-border: transparent;
+    --card-shadow: 0 1px 3px rgba(0,0,0,0.1); 
 
-            --card-hover-bg: #ffffff;
-            --card-hover-border: #3b82f6;
-            --card-hover-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+    --card-hover-bg: #ffffff;
+    --card-hover-border: var(--primary);
+    --card-hover-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
 
-            --input-bg: #f9fafb;
-            --chip-bg: #ffffff;
-            --chip-bg-hover: #f3f4f6;
-            --chip-active-bg: #eff6ff;
-            --chip-active-text: #1d4ed8;
-            --chip-active-border: #3b82f6;
+    --input-bg: #f9fafb;
+    --chip-bg: #ffffff;
+    --chip-bg-hover: #f3f4f6;
+    --chip-active-bg: #e2e8f0; /* Light slate background */
+    
+    /* Matches the primary slate color */
+    --chip-active-text: #334155; 
+    --chip-active-border: var(--primary);
 
-            --color-high-rgb: 220, 38, 38;
-            --color-med-rgb:  217, 119, 6;
-            --color-low-rgb:  5, 150, 105;
+    --color-high-rgb: 220, 38, 38;
+    --color-med-rgb:  217, 119, 6;
+    --color-low-rgb:  5, 150, 105;
 
-            --progress-fill: #10b981; 
-            --radius-pill: 8px;
-            --radius-card: 16px;
-        }
+    --progress-fill: #10b981; 
+    --radius-pill: 8px;
+    --radius-card: 16px;
+}
 
         body {
             background-color: var(--bg-body);
@@ -67,7 +72,7 @@
         .app-bar {
             background: transparent; /* No background color */
             backdrop-filter: blur(12px); /* Frosted glass effect */
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 2px solid var(--border-color);
             
             height: 72px;
             display: flex;
@@ -76,7 +81,7 @@
             
             position: sticky;
             top: 10px;
-            margin: 0 16px 16px 16px;
+            margin: 8px 24px 6px 24px;
             z-index: 1000;
         }
 
@@ -207,7 +212,7 @@
             border: 1px solid var(--border-color);
             border-radius: var(--radius-pill); /* Uses your 8px variable */
             padding: 8px 18px;
-            font-size: 0.85rem;
+            font-size: 1.05rem;
             font-weight: 600;
             color: var(--text-secondary);
             cursor: pointer;
@@ -615,12 +620,6 @@
     <div class="modal fade" id="createModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="fw-bold d-flex align-items-center">
-                        <i class="bi bi-plus-circle-fill me-2 text-primary"></i> New Task
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label-material">Title</label>
