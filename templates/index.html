@@ -10,29 +10,43 @@
     
     <style>
         :root {
-            /* --- Modern Dark Palette (Slate) --- */
-            --bg-body: #0f172a;       /* Deep Slate */
-            --bg-surface: #2e3b52;    /* Lighter Slate */
-            --bg-surface-hover: #263243;
+            --bg-body: #f3f4f6;       /* Light Grey */
+            --bg-surface: #ffffff;    /* White */
+            --bg-app-bar: rgba(255, 255, 255, 0.9);
             
-            --text-main: #f8fafc;     /* Off-white */
-            --text-secondary: #94a3b8; /* Muted Blue-Grey */
-            
-            --primary: #6366f1;       /* Indigo */
-            --primary-hover: #4f46e5;
-            --primary-glow: rgba(99, 102, 241, 0.3);
+            --text-main: #111827;     /* Almost Black */
+            --text-secondary: #6b7280; 
 
-            --danger: #ef4444;
-            --success: #10b981;
-            --warning: #f59e0b;
-
-            --border-color: #334155;
+            --primary: #3b82f6;       /* Blue */
+            --primary-hover: #2563eb;
+            --primary-glow: rgba(59, 130, 246, 0.3);
             
+            --border-color: #e5e7eb;
+            
+            --lane-bg: #e5e7eb;       /* Darker grey for lane track */
+            
+            --card-bg: #ffffff;
+            --card-border: transparent;
+            --card-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+
+            --card-hover-bg: #ffffff;
+            --card-hover-border: #3b82f6;
+            --card-hover-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+
+            --input-bg: #f9fafb;
+            --chip-bg: #ffffff;
+            --chip-bg-hover: #f3f4f6;
+            --chip-active-bg: #eff6ff;
+            --chip-active-text: #1d4ed8;
+            --chip-active-border: #3b82f6;
+
+            --color-high-rgb: 220, 38, 38;
+            --color-med-rgb:  217, 119, 6;
+            --color-low-rgb:  5, 150, 105;
+
+            --progress-fill: #10b981; 
+            --radius-pill: 8px;
             --radius-card: 16px;
-            --radius-pill: 99px;
-
-            /* Lane Colors (Darkened) */
-            --lane-bg: #162032; 
         }
 
         body {
@@ -50,7 +64,7 @@
 
         /* --- App Bar --- */
         .app-bar {
-            background: rgba(15, 23, 42, 0.85);
+            background: var(--bg-app-bar); /* Uses the variable */
             backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border-color);
             padding: 16px 32px;
@@ -89,14 +103,16 @@
         }
 
         .btn-archive-toggle:hover {
-            border-color: var(--text-secondary);
-            color: var(--text-main);
+            border-color: var(--primary);
+            color: var(--primary);
+            background: var(--bg-surface);
         }
 
         .btn-archive-toggle.active {
-            background: var(--text-main);
-            color: var(--bg-body);
-            border-color: var(--text-main);
+            background: var(--primary);         
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px var(--primary-glow); 
         }
 
         /* --- Creator Panel (Sidebar) --- */
@@ -120,7 +136,7 @@
         }
 
         .form-control-material {
-            background: #0f172a; 
+            background: var(--input-bg); 
             border: 1px solid var(--border-color);
             border-radius: 8px;
             padding: 12px 16px; /* Slightly larger inputs */
@@ -132,11 +148,11 @@
         .form-control-material::placeholder { color: #475569; }
 
         .form-control-material:focus {
-            background: #0f172a;
+            background: var(--bg-surface);
+            color: var(--text-main);
             border-color: var(--primary);
             box-shadow: 0 0 0 3px var(--primary-glow);
             outline: none;
-            color: white;
         }
         
         input[type="date"]::-webkit-calendar-picker-indicator {
@@ -145,7 +161,7 @@
         }
 
         .btn-primary-material {
-            background: linear-gradient(135deg, var(--primary), #4338ca);
+            background: var(--primary);
             color: white;
             border: none;
             border-radius: var(--radius-pill);
@@ -158,8 +174,10 @@
 
         .btn-primary-material:hover {
             transform: translateY(-1px);
+            background: var(--primary-hover);
             box-shadow: 0 6px 16px var(--primary-glow);
             filter: brightness(1.1);
+
         }
 
         /* --- Projects Chips (Filter) --- */
@@ -191,9 +209,9 @@
         }
         
         .chip.active {
-            background: rgba(99, 102, 241, 0.15);
-            color: #818cf8;
-            border-color: #4f46e5;
+            background: var(--chip-active-bg);
+            color: var(--chip-active-text);
+            border-color: var(--chip-active-border);
         }
 
         .chip-count {
@@ -211,7 +229,8 @@
             border: 1px solid transparent; 
             border-radius: var(--radius-card);
             padding: 16px;
-            height: 100%;
+            height: calc(100vh - 140px);
+            max-height: calc(100vh - 200px);
             min-height: 75vh;
             display: flex;
             flex-direction: column;
@@ -247,10 +266,15 @@
         .lane-content {
             flex-grow: 1;
             overflow-y: auto;
-            min-height: 100px;
+            
+            padding-top: 8px; 
+            padding-left: 4px; 
+            padding-right: 8px;
             padding-bottom: 20px;
-            padding-right: 4px;
+            
             transition: background 0.2s;
+
+            scrollbar-width: thin;
         }
 
         .lane-content.drag-over {
@@ -261,28 +285,24 @@
 
         /* --- Task Cards --- */
         .task-card {
-            /* CHANGED: Brighter background for better contrast against the lane */
-            background: #2e3b52; 
+            background: var(--card-bg); 
+            border: 1px solid var(--card-border);
             border-radius: 12px;
             padding: 20px;
             margin-bottom: 16px;
-            
-            /* CHANGED: Slightly lighter border to match the new background */
-            border: 1px solid #475569; 
+            box-shadow: var(--card-shadow);
+            color: var(--text-main);
             
             cursor: grab;
             transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
             position: relative;
             overflow: hidden;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
 
         .task-card:hover {
-            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-            
-            /* CHANGED: Brighter border on hover */
-            border-color: #94a3b8; 
-            
+            background: var(--card-hover-bg);
+            border-color: var(--card-hover-border);
+            box-shadow: var(--card-hover-shadow);
             transform: translateY(-2px);
         }
 
@@ -304,21 +324,21 @@
         }
         
         .badge-priority.priority-high {
-            background: rgba(239, 68, 68, 0.15);
-            color: #fca5a5;
-            border: 1px solid rgba(239, 68, 68, 0.3);
+            background: rgba(var(--color-high-rgb), 0.15);
+            color: rgb(var(--color-high-rgb));
+            border: 1px solid rgba(var(--color-high-rgb), 0.3);
         }
         
         .badge-priority.priority-medium {
-            background: rgba(245, 158, 11, 0.15);
-            color: #fcd34d;
-            border: 1px solid rgba(245, 158, 11, 0.3);
+            background: rgba(var(--color-med-rgb), 0.15);
+            color: rgb(var(--color-med-rgb));
+            border: 1px solid rgba(var(--color-med-rgb), 0.3);
         }
         
         .badge-priority.priority-low {
-            background: rgba(16, 185, 129, 0.15);
-            color: #6ee7b7;
-            border: 1px solid rgba(16, 185, 129, 0.3);
+            background: rgba(var(--color-low-rgb), 0.15);
+            color: rgb(var(--color-low-rgb));
+            border: 1px solid rgba(var(--color-low-rgb), 0.3);
         }
 
         .card-meta {
@@ -422,7 +442,7 @@
         }
         .progress-bar-fill {
             height: 100%;
-            background-color: var(--success);
+            background-color: var(--progress-fill);
             border-radius: 2px;
         }
 
@@ -456,68 +476,19 @@
             <i class="bi bi-kanban-fill"></i>
             <span>Personal Kanban</span>
         </div>
-        <button id="show-archived-btn" class="btn-archive-toggle">
-            <i class="bi bi-archive me-2"></i>Archive
-        </button>
+        <div class="d-flex gap-3">
+            <button class="btn-primary-material py-2 px-4" data-bs-toggle="modal" data-bs-target="#createModal" style="width: auto; font-size: 0.9rem;">
+                <i class="bi bi-plus-lg me-2"></i>New Task
+            </button>
+            <button id="show-archived-btn" class="btn-archive-toggle">
+                <i class="bi bi-archive me-2"></i>Archive
+            </button>
+        </div>
     </header>
 
     <div class="container-fluid px-4 py-4">
         <div class="row g-4">
-            
-            <div class="col-lg-4 col-xl-3">
-                <div class="creator-card">
-                    <h5 class="mb-4 fw-bold text-white d-flex align-items-center">
-                        <i class="bi bi-plus-circle-fill me-2 text-primary"></i> New Task
-                    </h5>
-                    
-                    <div class="mb-3">
-                        <label class="form-label-material">Title</label>
-                        <input id="new-title" class="form-control form-control-material" placeholder="e.g. Update API">
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label-material">Project</label>
-                        <input id="new-project" list="project-suggestions" class="form-control form-control-material" placeholder="Select or type...">
-                        <datalist id="project-suggestions"></datalist>
-                    </div>
-
-                    <div class="row g-2 mb-3">
-                        <div class="col-6">
-                            <label class="form-label-material">Priority</label>
-                            <select id="new-priority" class="form-select form-control-material" style="cursor:pointer">
-                                <option>Low</option>
-                                <option selected>Medium</option>
-                                <option>High</option>
-                            </select>
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label-material">Due Date</label>
-                            <input type="date" id="new-deadline" class="form-control form-control-material">
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label-material">Description</label>
-                        <textarea id="new-desc" class="form-control form-control-material" rows="3" placeholder="Brief details..."></textarea>
-                    </div>
-
-                    <input type="hidden" id="new-column" value="Backlog">
-
-                    <div class="mb-4">
-                        <label class="form-label-material d-flex justify-content-between">
-                            Subtasks
-                            <span class="text-link" style="cursor:pointer; font-size:0.75rem" onclick="addSubtaskInput()">+ Add</span>
-                        </label>
-                        <div id="subtask-input-container"></div>
-                    </div>
-
-                    <button id="add-task" class="btn-primary-material">
-                        Create Task
-                    </button>
-                </div>
-            </div>
-
-            <div class="col-lg-8 col-xl-9">
+            <div class="col-12">
                 <div class="d-flex align-items-center mb-3">
                     <i class="bi bi-funnel-fill text-secondary me-3"></i>
                     <div id="project-nav" class="chip-container"></div>
@@ -573,6 +544,7 @@
                             <label class="form-label-material">Stage</label>
                             <select id="edit-column" class="form-select form-control-material">
                                 <option>Backlog</option>
+                                <option>Requested</option>
                                 <option>In Progress</option>
                                 <option>Done</option>
                             </select>
@@ -595,11 +567,73 @@
         </div>
     </div>
 
+
+    <div class="modal fade" id="createModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="fw-bold d-flex align-items-center">
+                        <i class="bi bi-plus-circle-fill me-2 text-primary"></i> New Task
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label-material">Title</label>
+                        <input id="new-title" class="form-control form-control-material" placeholder="e.g. Update API">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label-material">Project</label>
+                        <input id="new-project" list="project-suggestions" class="form-control form-control-material" placeholder="Select or type...">
+                        <datalist id="project-suggestions"></datalist>
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label-material">Priority</label>
+                            <select id="new-priority" class="form-select form-control-material" style="cursor:pointer">
+                                <option>Low</option>
+                                <option selected>Medium</option>
+                                <option>High</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label-material">Due Date</label>
+                            <input type="date" id="new-deadline" class="form-control form-control-material">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label-material">Description</label>
+                        <textarea id="new-desc" class="form-control form-control-material" rows="3" placeholder="Brief details..."></textarea>
+                    </div>
+
+                    <input type="hidden" id="new-column" value="Backlog">
+
+                    <div class="mb-4">
+                        <label class="form-label-material d-flex justify-content-between">
+                            Subtasks
+                            <span class="text-link" style="cursor:pointer; font-size:0.75rem" onclick="addSubtaskInput()">+ Add</span>
+                        </label>
+                        <div id="subtask-input-container"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-link text-secondary text-decoration-none" data-bs-dismiss="modal">Cancel</button>
+                    <button id="add-task" class="btn-primary-material" style="width: auto;">Create Task</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // --- LOGIC ---
         const expandedTasks = new Set();
-        const STATUSES = ["Backlog", "In Progress", "Done"];
+        const STATUSES = ["Backlog", "Requested", "In Progress", "Done"];
         const archivedBtn = document.getElementById('show-archived-btn');
         let currentProjectFilter = "";
 
@@ -623,6 +657,7 @@
             // Configuration for lane colors/styles
             const laneConfig = {
                 "Backlog": { class: "lane-col-backlog" },
+                "Requested": { class: "lane-col-requested" },
                 "In Progress": { class: "lane-col-progress" },
                 "Done": { class: "lane-col-done" },
                 "Archived": { class: "lane-col-backlog" }
@@ -639,7 +674,7 @@
                 const config = laneConfig[s] || { class: "" };
                 
                 // If archived, full width, else split in 3
-                const colSize = showArchived ? 'col-12' : 'col-md-6 col-xl-4';
+                const colSize = showArchived ? 'col-12' : 'col-12 col-lg-3';
 
                 const colHtml = `
                     <div class="${colSize} ${config.class}">
@@ -765,7 +800,9 @@
 
         // Project Navigation / Chips
         async function populateProjects() {
-            const [active, archived] = await Promise.all([fetchTasks(false), fetchTasks(true)]);
+            const [activeRaw, archivedRaw] = await Promise.all([fetchTasks(false), fetchTasks(true)]);
+            const active = activeRaw.filter(t => t.column !== 'Archived');
+            const archived = archivedRaw.filter(t => t.column === 'Archived');
             const all = [...active, ...archived];
             const counts = all.reduce((acc, t) => {
                 const p = t.project || 'General';
@@ -830,6 +867,11 @@
             document.getElementById('new-priority').value = 'Medium';
             document.getElementById('new-deadline').value = '';
             document.getElementById('subtask-input-container').innerHTML = '';
+
+            const modalEl = document.getElementById('createModal');
+            const modalInstance = bootstrap.Modal.getInstance(modalEl);
+            modalInstance.hide();
+
             await populateProjects();
             render();
         });

@@ -126,7 +126,7 @@ if __name__ == "__main__":
     webview.create_window(
         "Personal Kanban",
         "http://127.0.0.1:8502",
-        width=1200,
+        width=1400,
         height=800,
         resizable=True,
     )
