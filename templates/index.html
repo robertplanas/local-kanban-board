@@ -753,11 +753,11 @@
                             </div>
                         </div>
                         <div class="task-title">${t.title}</div>
-                        ${t.description ? `<div class="task-desc">${t.description}</div>` : ''}
                         ${subtaskHtml}
                     </div>
 
                     <div class="card-details">
+                        ${t.description ? `<div class="task-desc">${t.description}</div>` : ''}
                         ${checklistHtml}
                         <div class="action-btn-group">
                             ${!showArchived ? `<button onclick="openEdit(${t.id})" class="icon-btn" title="Edit"><i class="bi bi-pencil-fill"></i></button>` : ''}
