@@ -1,7 +1,7 @@
 import sys
 import os
 import threading
-import webview  # <--- The new library
+import webview
 from flask import Flask, render_template, request, jsonify
 import db
 import json
