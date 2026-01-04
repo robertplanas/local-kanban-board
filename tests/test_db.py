@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 
 import db
@@ -9,18 +8,22 @@ def test_db_crud(tmp_path: Path):
     db.init_db(str(db_path))
 
     # Create
-    tid = db.add_task("Task1", "Desc", column="Backlog", priority="High", db_path=str(db_path))
+    tid = db.add_task(
+        "Task1", "Desc", column="Backlog", priority="High", db_path=str(db_path)
+    )
     tasks = db.get_tasks(str(db_path))
     assert len(tasks) == 1
     assert tasks[0]["title"] == "Task1"
 
     # Move
-    db.move_task(tid, "In Progress", db_path=str(db_path))
+    db.update_task(tid, "In Progress", db_path=str(db_path))
     tasks = db.get_tasks(str(db_path))
     assert tasks[0]["column"] == "In Progress"
 
     # Update
-    db.update_task(tid, title="Task1-upd", description="New", priority="Low", db_path=str(db_path))
+    db.update_task(
+        tid, title="Task1-upd", description="New", priority="Low", db_path=str(db_path)
+    )
     tasks = db.get_tasks(str(db_path))
     assert tasks[0]["title"] == "Task1-upd"
     assert tasks[0]["priority"] == "Low"
