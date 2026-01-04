@@ -58,8 +58,8 @@ def test_create_move_and_delete_task(client):
     assert tasks[0]["column"] == "Backlog"
 
     # 3. Move Task via API
-    move_payload = {"to": "In Progress"}
-    rv = client.post(f"/api/task/{task_id}/move", json=move_payload)
+    update_payload = {"column": "In Progress"}
+    rv = client.put(f"/api/task/{task_id}", json=update_payload)
     assert rv.status_code == 200
     assert rv.json["moved"] is True
 
