@@ -690,6 +690,17 @@
             } catch (err) { console.error(err); return []; }
         }
 
+        // ESCAPE HTML
+        function escapeHtml(text) {
+            if (!text) return "";
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
         // RENDER
         async function render() {
             const showArchived = archivedBtn.classList.contains('active');
@@ -775,7 +786,7 @@
                                 <input type="checkbox" ${st.completed?'checked':''} 
                                     onclick="event.stopPropagation(); toggleSubtask(${t.id}, ${i})" 
                                     style="accent-color:var(--primary); width:16px; height:16px; cursor:pointer">
-                                <span class="small ${st.completed?'text-decoration-line-through text-secondary':''}">${st.text}</span>
+                                <span class="small ${st.completed?'text-decoration-line-through text-secondary':''}">${escapeHtml(st.text)}</span>
                             </div>
                         `).join('')}
                     </div>`;
@@ -792,15 +803,15 @@
                             </div>
                             <div class="meta-right">
                                 ${dayInfo ? `<span class="badge-date ${dayInfo.includes('late') ? 'text-danger border-danger' : ''}"><i class="bi bi-clock me-1"></i>${dayInfo}</span>` : ''}
-                                <span class="project-tag">${t.project || 'General'}</span>
+                                <span class="project-tag">${escapeHtml(t.project) || 'General'}</span>
                             </div>
                         </div>
-                        <div class="task-title">${t.title}</div>
+                        <div class="task-title">${escapeHtml(t.title)}</div>
                         ${subtaskHtml}
                     </div>
 
                     <div class="card-details">
-                        ${t.description ? `<div class="task-desc">${t.description}</div>` : ''}
+                        ${t.description ? `<div class="task-desc">${escapeHtml(t.description)}</div>` : ''}
                         ${checklistHtml}
                         <div class="action-btn-group">
                             ${!showArchived ? `<button onclick="openEdit(${t.id})" class="icon-btn" title="Edit"><i class="bi bi-pencil-fill"></i></button>` : ''}
@@ -848,7 +859,7 @@
             const archived = archivedRaw.filter(t => t.column === 'Archived');
             const all = [...active, ...archived];
             const counts = all.reduce((acc, t) => {
-                const p = t.project || 'General';
+                const p = escapeHtml(t.project) || 'General';
                 acc[p] = (acc[p] || 0) +1;
                 return acc;
             }, {});
@@ -1041,6 +1052,7 @@
         // Init
         archivedBtn.addEventListener('click', () => { archivedBtn.classList.toggle('active'); render(); });
         populateProjects().then(render);
+
     </script>
 </body>
 </html>
