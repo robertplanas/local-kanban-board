@@ -24,13 +24,9 @@
 ### Data & Enginering: 
 
 * **Relational Data Storage:** SQLite-backed persistence for tasks, subtasks, projects, and priorities.
-
 * **Clear Data Access Layer:** Centralized CRUD operations to ensure consistency.
-
 * **Local Persistence:** Data stored outside the application bundle to survive rebuilds.
-
 * **Automated Tests:** Pytest coverage for API endpoints and database logic.
-
 * **Reproducible Builds:** One-command packaging for macOS and Windows.y.
 
 
