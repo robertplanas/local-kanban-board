@@ -91,14 +91,6 @@ def add_task(
     return task_id
 
 
-def move_task(task_id: int, new_column: str, db_path: str = "kanban_board.db") -> None:
-    conn = _connect(db_path)
-    cur = conn.cursor()
-    cur.execute("UPDATE tasks SET column = ? WHERE id = ?", (new_column, task_id))
-    conn.commit()
-    conn.close()
-
-
 def update_task(
     task_id: int,
     title: Optional[str] = None,
@@ -152,15 +144,6 @@ def delete_task(task_id: int, db_path: str = "kanban_board.db") -> None:
     cur.execute("DELETE FROM tasks WHERE id = ?", (task_id,))
     conn.commit()
     conn.close()
-
-
-def archive_task(task_id: int, db_path: str = "kanban_board.db") -> None:
-    move_task(task_id, "Archived", db_path=db_path)
-
-
-def unarchive_task(task_id: int, db_path: str = "kanban_board.db") -> None:
-    """Move a task out of Archived back to Backlog."""
-    move_task(task_id, "Backlog", db_path=db_path)
 
 
 def get_projects(db_path: str = "kanban_board.db") -> List[str]:

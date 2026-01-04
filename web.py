@@ -57,28 +57,6 @@ def api_add_task():
     return jsonify({"id": tid})
 
 
-@app.route("/api/task/<int:task_id>/move", methods=["POST"])
-def api_move(task_id):
-    data = request.json or {}
-    to_col = data.get("to")
-    if not to_col:
-        return jsonify({"error": "invalid"}), 400
-    db.move_task(task_id, to_col, db_path=DB_PATH)
-    return jsonify({"moved": True})
-
-
-@app.route("/api/task/<int:task_id>/archive", methods=["POST"])
-def api_archive(task_id):
-    db.archive_task(task_id, db_path=DB_PATH)
-    return jsonify({"archived": True})
-
-
-@app.route("/api/task/<int:task_id>/unarchive", methods=["POST"])
-def api_unarchive(task_id):
-    db.unarchive_task(task_id, db_path=DB_PATH)
-    return jsonify({"unarchived": True})
-
-
 @app.route("/api/projects")
 def api_projects():
     projects = db.get_projects(DB_PATH)

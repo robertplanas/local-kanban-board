@@ -975,7 +975,10 @@
                     e.preventDefault(); lane.classList.remove('drag-over');
                     const id = e.dataTransfer.getData('text/plain');
                     const to = lane.id.replace('lane-', '');
-                    await fetch(`/api/task/${id}/move`, { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({to}) });
+                    await fetch(`/api/task/${id}`, {
+                        method: 'PUT',
+                        headers:{'Content-Type':'application/json'},
+                        body: JSON.stringify({column: to}) });
                     render();
                 });
             });
@@ -983,7 +986,10 @@
 
         // Archive/Delete wrappers
         window.archiveTask = async (id, isArchived) => {
-            await fetch(`/api/task/${id}/${isArchived ? 'unarchive' : 'archive'}`, {method:'POST'});
+            await fetch(`/api/task/${id}`, {
+                method: 'PUT',
+                headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({column: `${isArchived ? 'Backlog' : 'Archived'}`}) });
             populateProjects(); render();
         };
         window.deleteTask = async (id) => {
