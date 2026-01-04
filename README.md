@@ -112,16 +112,5 @@ The project includes a test suite using pytest to ensure API and Database stabil
     # Run all tests
     pytest tests/
 
-## Contributing
-Fork the repository.
-
-Create a feature branch (git checkout -b feature/AmazingFeature).
-
-Commit your changes (git commit -m 'Add some AmazingFeature').
-
-Push to the branch (git push origin feature/AmazingFeature).
-
-Open a Pull Request.
-
-📄 License
+## License
 Distributed under the MIT License. See LICENSE for more information.
