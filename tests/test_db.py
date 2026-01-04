@@ -16,7 +16,7 @@ def test_db_crud(tmp_path: Path):
     assert tasks[0]["title"] == "Task1"
 
     # Move
-    db.update_task(tid, "In Progress", db_path=str(db_path))
+    db.update_task(tid, column="In Progress", db_path=str(db_path))
     tasks = db.get_tasks(str(db_path))
     assert tasks[0]["column"] == "In Progress"
 
@@ -29,7 +29,7 @@ def test_db_crud(tmp_path: Path):
     assert tasks[0]["priority"] == "Low"
 
     # Archive
-    db.archive_task(tid, db_path=str(db_path))
+    db.update_task(tid, column="Archived", db_path=str(db_path))
     tasks = db.get_tasks(str(db_path))
     assert len(tasks) == 0
     tasks_all = db.get_tasks(str(db_path), include_archived=True)

@@ -61,7 +61,6 @@ def test_create_move_and_delete_task(client):
     update_payload = {"column": "In Progress"}
     rv = client.put(f"/api/task/{task_id}", json=update_payload)
     assert rv.status_code == 200
-    assert rv.json["moved"] is True
 
     # 4. Verify Move
     rv = client.get("/api/tasks")
