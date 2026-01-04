@@ -9,7 +9,7 @@
 
 ![Demo GIF](./auxiliar/kanban_app.gif)*
 
-## 🚀 Key Features
+## Key Features
 
 * **Native Desktop Experience:** Runs as a standalone window (macOS/Windows) without a browser address bar.
 * **Kanban Workflow:** Drag-and-drop tasks between *Backlog*, *Requested*, *In Progress*, and *Done*.
@@ -19,7 +19,7 @@
 * **Data Persistence:** Auto-saves to a local SQLite database located in your user home directory.
 * **Visual Priority:** Distinct visual cues for High, Medium, and Low priority tasks.
 
-## 📂 Project Structure
+## Project Structure
 
 ```text
 .
@@ -36,7 +36,7 @@
     ├── test_api.py
     └── test_db.py
 ```
-## 🛠  Installation & Development
+## Installation & Development
 
 1. Clone the repository
 
@@ -69,7 +69,7 @@
     python web.py
     ```
 
-## 📦 Building the Executable
+## Building the Executable
 To package the application as a standalone .app (macOS) or .exe (Windows), use the provided deploy script. This uses PyInstaller.
 
     ./deploy.sh
@@ -79,18 +79,18 @@ The executable will be generated in the dist/ folder.
 - macOS: dist/Personal Kanban.app
 - Windows: dist/Personal Kanban.exe
 
-## 💽 Data Storage
+## Data Storage
 The application stores your data in a simple SQLite database file located in your home directory to prevent data loss during updates or rebuilds.
 
 - **Location**: ~/kanban_board.db (User Home Directory)
 
-##  ✅ Testing
+## Testing
 The project includes a test suite using pytest to ensure API and Database stability.
 
     # Run all tests
     pytest tests/
 
-## 🤝 Contributing
+## Contributing
 Fork the repository.
 
 Create a feature branch (git checkout -b feature/AmazingFeature).
