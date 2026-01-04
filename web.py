@@ -6,6 +6,10 @@ from flask import Flask, render_template, request, jsonify
 import db
 import json
 
+
+VALID_COLUMNS = {"Backlog", "Requested", "In Progress", "Done", "Archived"}
+VALID_PRIORITIES = {"Low", "Medium", "High"}
+
 # --- CONFIGURATION ---
 if getattr(sys, "frozen", False):
     base_dir = getattr(
@@ -36,12 +40,27 @@ def api_tasks():
     return jsonify(tasks)
 
 
+@app.route("/api/task/<int:task_id>", methods=["GET"])
+def api_get_task(task_id):
+    task = db.get_task(task_id, DB_PATH)
+    if task:
+        return jsonify(task)
+    return jsonify({"error": "Task not found"}), 404
+
+
 @app.route("/api/task", methods=["POST"])
 def api_add_task():
     data = request.json or {}
     title = data.get("title")
     if not title:
         return jsonify({"error": "title required"}), 400
+
+    # Validate the data
+    if data.get("column") not in VALID_COLUMNS:
+        return jsonify({"error": "Invalid column"}), 400
+
+    if data.get("priority") not in VALID_PRIORITIES:
+        return jsonify({"error": "Invalid priority"}), 400
 
     tid = db.add_task(
         title,
@@ -73,6 +92,14 @@ def api_delete(task_id):
 def api_update_task(task_id):
     data = request.json or {}
     subtasks = data.get("subtasks")
+
+    # Validate the data
+    if data.get("column") not in VALID_COLUMNS:
+        return jsonify({"error": "Invalid column"}), 400
+
+    if data.get("priority") not in VALID_PRIORITIES:
+        return jsonify({"error": "Invalid priority"}), 400
+
     db.update_task(
         task_id,
         title=data.get("title"),

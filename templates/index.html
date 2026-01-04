@@ -940,17 +940,10 @@
 
         async function toggleSubtask(id, idx) {
             // Fetch both active and archived lists to ensure we find the task anywhere
-            const [active, archived] = await Promise.all([
-                fetch('/api/tasks?archived=0').then(r => r.json()),
-                fetch('/api/tasks?archived=1').then(r => r.json())
-            ]);
+            const res = await fetch(`/api/task/${id}`);
+            if (!res.ok) return;
             
-            // Combine them
-            const all = [...active, ...archived];
-            const t = all.find(x => x.id === id);
-            
-            if(!t) return;
-            
+            const t = await res.json();
             const sub = typeof t.subtasks === 'string' ? JSON.parse(t.subtasks) : t.subtasks;
             
             if(sub[idx]) {
