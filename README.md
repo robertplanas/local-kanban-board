@@ -2,6 +2,10 @@
 
 ![Python](https://img.shields.io/badge/Python-3.13-blue.svg)
 ![Flask](https://img.shields.io/badge/Flask-3.1.2-green.svg)
+![SQLite](https://img.shields.io/badge/Database-SQLite-lightgrey.svg)
+![JavaScript](https://img.shields.io/badge/JavaScript-ES6-yellow.svg)
+![Bootstrap](https://img.shields.io/badge/Bootstrap-5-purple.svg)
+![Pytest](https://img.shields.io/badge/Testing-pytest-success.svg)
 ![License](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Status](https://img.shields.io/badge/Status-Active-success.svg)
 
