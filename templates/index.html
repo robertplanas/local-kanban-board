@@ -940,7 +940,7 @@
 
         async function toggleSubtask(id, idx) {
             // Fetch both active and archived lists to ensure we find the task anywhere
-            const res = await fetch(`/api/task/${id}`);
+            const res = await fetch(`/api/task/${id}`);            
             if (!res.ok) return;
             
             const t = await res.json();

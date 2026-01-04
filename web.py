@@ -56,10 +56,10 @@ def api_add_task():
         return jsonify({"error": "title required"}), 400
 
     # Validate the data
-    if data.get("column") not in VALID_COLUMNS:
+    if "column" in data and data.get("column") not in VALID_COLUMNS:
         return jsonify({"error": "Invalid column"}), 400
 
-    if data.get("priority") not in VALID_PRIORITIES:
+    if "priority" in data and data.get("priority") not in VALID_PRIORITIES:
         return jsonify({"error": "Invalid priority"}), 400
 
     tid = db.add_task(
@@ -94,11 +94,13 @@ def api_update_task(task_id):
     subtasks = data.get("subtasks")
 
     # Validate the data
-    if data.get("column") not in VALID_COLUMNS:
-        return jsonify({"error": "Invalid column"}), 400
+    if "column" in data:
+        if data.get("column") not in VALID_COLUMNS:
+            return jsonify({"error": "Invalid column"}), 400
 
-    if data.get("priority") not in VALID_PRIORITIES:
-        return jsonify({"error": "Invalid priority"}), 400
+    if "priority" in data:
+        if data.get("priority") not in VALID_PRIORITIES:
+            return jsonify({"error": "Invalid priority"}), 400
 
     db.update_task(
         task_id,
