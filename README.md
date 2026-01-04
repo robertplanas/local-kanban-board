@@ -7,7 +7,7 @@
 
 **Personal Kanban** is a lightweight, privacy-focused desktop application for managing tasks. Built with **Flask** and **pywebview**, it combines the power of a web interface with the convenience of a native desktop app. All data is stored locally on your machine, ensuring your plans remain private.
 
-![Demo GIF](./auxiliar/kanban_app.gif)*
+![Demo GIF](./auxiliar/kanban_app.gif)
 
 ## Key Features
 
