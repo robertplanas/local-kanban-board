@@ -5,19 +5,45 @@
 ![License](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Status](https://img.shields.io/badge/Status-Active-success.svg)
 
-**Personal Kanban** is a lightweight, privacy-focused desktop application for managing tasks. Built with **Flask** and **pywebview**, it combines the power of a web interface with the convenience of a native desktop app. All data is stored locally on your machine, ensuring your plans remain private.
+**Personal Kanban** is a lightweight, privacy-focused desktop application for managing tasks. Built with **Flask** and **PyWebView**, it combines the power of a web interface with the convenience of a native desktop app. All data is stored locally on your machine, ensuring your plans remain private.
 
 ![Demo GIF](./auxiliar/kanban_app.gif)
 
 ## Key Features
 
-* **Native Desktop Experience:** Runs as a standalone window (macOS/Windows) without a browser address bar.
+### Product & UX
+
+* **Native Desktop Experience:** Packaged via PyInstaller using Flask + PyWebView (no browser dependency).
 * **Kanban Workflow:** Drag-and-drop tasks between *Backlog*, *Requested*, *In Progress*, and *Done*.
+* **Subtasks & Progress Tracking:** Checklist completion automatically computes task‑level progress.
+* **Project‑Based Segmentation:** Tag‑driven filtering enables structured task grouping.
 * **Project Management:** Filter tasks by project with a dynamic tag system.
-* **Subtasks & Progress:** Add checklists to cards and visualize progress with automatic progress bars.
 * **Archive System:** Archive completed tasks to keep your board clean without losing history.
-* **Data Persistence:** Auto-saves to a local SQLite database located in your user home directory.
 * **Visual Priority:** Distinct visual cues for High, Medium, and Low priority tasks.
+
+### Data & Enginering: 
+
+* **Relational Data Storage:** SQLite-backed persistence for tasks, subtasks, projects, and priorities.
+
+* **Clear Data Access Layer:** Centralized CRUD operations to ensure consistency.
+
+* **Local Persistence:** Data stored outside the application bundle to survive rebuilds.
+
+* **Automated Tests:** Pytest coverage for API endpoints and database logic.
+
+* **Reproducible Builds:** One-command packaging for macOS and Windows.y.
+
+
+## Technical Architecture
+
+This separation mirrors production analytics systems:
+
+![Technical Architecture](./auxiliar/technical_framework.png)
+
+
+* **Presentation Layer** → Visualization / interaction
+* **Application Layer** → Business logic & validation
+* **Data Layer** → Storage, constraints, and integrity
 
 ## Project Structure
 
